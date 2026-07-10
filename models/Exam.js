@@ -57,11 +57,10 @@ const examSchema = new mongoose.Schema({
 });
 
 // Validate that endTime is after startTime
-examSchema.pre('save', function(next) {
+examSchema.pre('save', function() {
     if (this.startTime && this.endTime && this.startTime >= this.endTime) {
-        next(new Error('End time must be after start time'));
+        throw new Error('End time must be after start time');
     }
-    next();
 });
 
 const Exam = mongoose.model('Exam', examSchema);
