@@ -1,67 +1,61 @@
 const mongoose = require('mongoose');
-const { EXAM_STATUS } = require('../constants/exam');
+
+const sectionSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    order: { type: Number, required: true },
+    optionalTime: { type: Number }, // in minutes, if specific time allocated per section
+    marks: { type: Number, required: true }
+}, { _id: true });
 
 const examSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: [true, 'Exam title is required'],
+        required: true,
         trim: true
     },
     description: {
         type: String,
-        required: [true, 'Exam description is required']
+        trim: true
     },
     instructions: {
-        type: String,
-        required: [true, 'Exam instructions are required']
+        type: String
+    },
+    duration: {
+        type: Number, // in minutes
+        required: true
     },
     startTime: {
         type: Date,
-        required: [true, 'Start time is required']
+        required: true
     },
     endTime: {
         type: Date,
-        required: [true, 'End time is required']
-    },
-    duration: {
-        type: Number,
-        required: [true, 'Duration in minutes is required']
-    },
-    totalQuestions: {
-        type: Number,
-        required: true,
-        default: 0
-    },
-    maximumMarks: {
-        type: Number,
-        required: true,
-        default: 0
+        required: true
     },
     status: {
         type: String,
-        enum: Object.values(EXAM_STATUS),
-        default: EXAM_STATUS.DRAFT
+        enum: ['Draft', 'Published', 'Started', 'Paused', 'Completed', 'Archived'],
+        default: 'Draft'
+    },
+    totalMarks: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    passingMarks: {
+        type: Number,
+        required: true
+    },
+    sections: [sectionSchema],
+    totalQuestions: {
+        type: Number,
+        default: 0
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
-    publishedAt: Date,
-    examType: {
-        type: String,
-        default: 'JEE'
     }
-}, {
-    timestamps: true
-});
+}, { timestamps: true });
 
-// Validate that endTime is after startTime
-examSchema.pre('save', function() {
-    if (this.startTime && this.endTime && this.startTime >= this.endTime) {
-        throw new Error('End time must be after start time');
-    }
-});
-
-const Exam = mongoose.model('Exam', examSchema);
-module.exports = Exam;
+module.exports = mongoose.model('Exam', examSchema);

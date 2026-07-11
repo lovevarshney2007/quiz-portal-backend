@@ -1,21 +1,13 @@
 const express = require('express');
-const questionController = require('../controllers/question.controller');
-const { protect, authorize } = require('../middlewares/auth.middleware');
-const ROLES = require('../constants/roles');
+const questionController = require('../controllers/questionController');
+const { protect, restrictTo } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
 router.use(protect);
+router.use(restrictTo('Admin')); // Only admins manage questions
 
-router.route('/')
-    .post(authorize(ROLES.ADMIN, ROLES.EXAM_COORDINATOR), questionController.createQuestion);
-
-router.route('/exam/:examId')
-    .get(questionController.getExamQuestions);
-
-router.route('/:id')
-    .get(questionController.getQuestion)
-    .patch(authorize(ROLES.ADMIN, ROLES.EXAM_COORDINATOR), questionController.updateQuestion)
-    .delete(authorize(ROLES.ADMIN, ROLES.EXAM_COORDINATOR), questionController.deleteQuestion);
+router.post('/import-preview', questionController.uploadExcel, questionController.importPreview);
+router.post('/confirm-import', questionController.confirmImport);
 
 module.exports = router;

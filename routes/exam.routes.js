@@ -1,19 +1,21 @@
 const express = require('express');
-const examController = require('../controllers/exam.controller');
-const { protect, authorize } = require('../middlewares/auth.middleware');
-const ROLES = require('../constants/roles');
+const examController = require('../controllers/examController');
+const { protect, restrictTo } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
 router.use(protect);
 
-router.route('/')
-    .get(examController.getAllExams)
-    .post(authorize(ROLES.ADMIN, ROLES.EXAM_COORDINATOR), examController.createExam);
+// Student actions
+router.post('/:id/autosave', restrictTo('Student'), examController.syncStudentResponse);
+router.get('/:id', examController.getExam);
 
-router.route('/:id')
-    .get(examController.getExam)
-    .patch(authorize(ROLES.ADMIN, ROLES.EXAM_COORDINATOR), examController.updateExam)
-    .delete(authorize(ROLES.ADMIN, ROLES.EXAM_COORDINATOR), examController.deleteExam);
+// Admin actions
+router.use(restrictTo('Admin'));
+router.post('/', examController.createExam);
+router.patch('/:id/publish', examController.publishExam);
+router.patch('/:id/start', examController.startExam);
+router.patch('/:id/pause', examController.pauseExam);
+router.patch('/:id/complete', examController.completeExam);
 
 module.exports = router;

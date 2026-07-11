@@ -1,41 +1,38 @@
-const { verifyToken } = require('../helpers/jwt.helper');
-const CustomError = require('../utils/customError');
-const { catchAsync } = require('./error.middleware');
-const userRepository = require('../repositories/user.repository');
+const jwt = require('jsonwebtoken');
+const userRepository = require('../repositories/userRepository');
 
-const protect = catchAsync(async (req, res, next) => {
-    let token;
-    
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
-    }
-
-    if (!token) {
-        return next(new CustomError('You are not logged in! Please log in to get access.', 401));
-    }
-
+exports.protect = async (req, res, next) => {
     try {
-        const decoded = verifyToken(token, process.env.JWT_SECRET);
-        
-        const currentUser = await userRepository.findById(decoded.id);
-        if (!currentUser) {
-            return next(new CustomError('The user belonging to this token no longer exists.', 401));
+        let token;
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            token = req.headers.authorization.split(' ')[1];
+        } else if (req.cookies && req.cookies.accessToken) {
+            token = req.cookies.accessToken;
         }
 
-        req.user = currentUser;
+        if (!token) {
+            return res.status(401).json({ status: 'error', message: 'You are not logged in!' });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await userRepository.findById(decoded.userId);
+
+        if (!user) {
+            return res.status(401).json({ status: 'error', message: 'User no longer exists.' });
+        }
+
+        req.user = user;
         next();
     } catch (error) {
-        return next(new CustomError('Invalid or expired token', 401));
+        return res.status(401).json({ status: 'error', message: 'Invalid or expired token.' });
     }
-});
+};
 
-const authorize = (...roles) => {
+exports.restrictTo = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {
-            return next(new CustomError('You do not have permission to perform this action', 403));
+            return res.status(403).json({ status: 'error', message: 'You do not have permission to perform this action' });
         }
         next();
     };
 };
-
-module.exports = { protect, authorize };

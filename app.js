@@ -2,6 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const compression = require('compression');
+
 const authRoutes = require('./routes/auth.routes');
 const examRoutes = require('./routes/exam.routes');
 const questionRoutes = require('./routes/question.routes');
@@ -16,7 +22,14 @@ const app = express();
 
 // Security Middlewares
 app.use(helmet());
-app.use(cors({ origin: '*' })); // Should be restricted in production
+app.use(cors({ origin: '*' }));
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 mins
+    max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use('/api', limiter);
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
@@ -24,8 +37,20 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Body Parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Data Sanitization against NoSQL Query Injection
+app.use(mongoSanitize());
+
+// Data Sanitization against XSS
+app.use(xss());
+
+// Prevent Parameter Pollution
+app.use(hpp());
+
+// Compression
+app.use(compression());
 
 // Health Check Route
 app.get('/health', (req, res) => {

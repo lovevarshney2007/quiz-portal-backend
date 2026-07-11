@@ -1,62 +1,51 @@
 const mongoose = require('mongoose');
-const { QUESTION_TYPE, DIFFICULTY } = require('../constants/exam');
 
 const optionSchema = new mongoose.Schema({
-    id: { type: String, required: true }, // e.g., 'A', 'B', 'C', 'D'
+    id: { type: String, required: true }, // e.g. A, B, C, D
     text: { type: String, required: true }
 }, { _id: false });
 
 const questionSchema = new mongoose.Schema({
-    examId: {
+    exam: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Exam',
-        required: true,
-        index: true
+        required: true
+    },
+    section: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true // references a specific section _id inside the Exam document
     },
     type: {
         type: String,
-        enum: Object.values(QUESTION_TYPE),
+        enum: ['Single Correct', 'Multiple Correct', 'True/False', 'Integer', 'Numerical'],
         required: true
     },
     questionText: {
         type: String,
-        required: [true, 'Question text is required']
-    },
-    images: [{
-        type: String // URLs from Cloudinary or local paths
-    }],
-    options: [optionSchema],
-    correctAnswers: [{
-        type: String, // Array of option IDs or exact answer for Numerical/Integer
         required: true
-    }],
-    explanation: String,
-    difficulty: {
-        type: String,
-        enum: Object.values(DIFFICULTY),
-        default: DIFFICULTY.MEDIUM
     },
-    subject: { type: String, required: true },
-    topic: String,
-    chapter: String,
+    options: [optionSchema], // Used for Single, Multiple, True/False
+    correctAnswer: {
+        type: mongoose.Schema.Types.Mixed, // Could be array of strings, single string, or number
+        required: true
+    },
     marks: {
         type: Number,
         required: true,
-        default: 4
+        default: 1
     },
-    negativeMarks: {
-        type: Number,
-        required: true,
-        default: -1
+    explanation: {
+        type: String
     },
-    language: {
+    difficulty: {
         type: String,
-        default: 'English'
+        enum: ['Easy', 'Medium', 'Hard'],
+        default: 'Medium'
     },
-    tags: [String]
-}, {
-    timestamps: true
-});
+    order: {
+        type: Number,
+        required: true
+    }
+}, { timestamps: true });
 
-const Question = mongoose.model('Question', questionSchema);
-module.exports = Question;
+module.exports = mongoose.model('Question', questionSchema);

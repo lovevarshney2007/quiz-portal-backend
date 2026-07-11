@@ -1,72 +1,83 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const ROLES = require('../constants/roles');
 
 const userSchema = new mongoose.Schema({
-    fullName: {
+    role: {
         type: String,
-        required: [true, 'Full name is required'],
+        enum: ['Admin', 'Student'],
+        required: true
+    },
+    name: {
+        type: String,
+        required: true,
         trim: true
     },
     studentNumber: {
         type: String,
-        required: [true, 'Student number is required'],
-        unique: true,
-        trim: true,
-        match: [/^25\d+$/, 'Student number must start with 25 and contain only digits']
+        required: function() { return this.role === 'Student'; },
+        validate: {
+            validator: function(v) {
+                // If admin, no validation needed
+                if (this.role !== 'Student') return true;
+                return /^25\d{5,6}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid 2nd year student number!`
+        }
     },
     email: {
         type: String,
-        required: [true, 'Email is required'],
+        required: true,
         unique: true,
-        lowercase: true,
         trim: true,
-        match: [/^[\w-\.]+@akgec\.ac\.in$/, 'Please use a valid @akgec.ac.in email address']
+        lowercase: true,
+        validate: {
+            validator: function(v) {
+                if (this.role !== 'Student') {
+                    // Admin email logic (could be anything or specific domain)
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+                }
+                // Must end with @akgec.ac.in and contain studentNumber
+                if (!v.endsWith('@akgec.ac.in')) return false;
+                if (!this.studentNumber) return false;
+                
+                const emailPrefix = v.split('@')[0];
+                return emailPrefix.includes(this.studentNumber);
+            },
+            message: props => `${props.value} is not a valid AKGEC email or does not match student number!`
+        }
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
-        minlength: 8,
-        select: false // Do not return password by default
-    },
-    branch: {
-        type: String,
-        required: [true, 'Branch is required']
-    },
-    section: {
-        type: String,
-        required: [true, 'Section is required']
-    },
-    year: {
-        type: String,
-        required: [true, 'Year is required']
-    },
-    role: {
-        type: String,
-        enum: Object.values(ROLES),
-        default: ROLES.STUDENT
+        required: true,
+        minlength: 6,
+        select: false // Do not return by default
     },
     isVerified: {
         type: Boolean,
-        default: false
+        default: true // Skipping OTP for now based on user instruction
     },
-    refreshToken: String
-}, {
-    timestamps: true
+    suspiciousAttempts: {
+        type: Number,
+        default: 0
+    },
+    refreshToken: {
+        type: String
+    }
+}, { timestamps: true });
+
+userSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
-// Hash password before saving
-userSchema.pre('save', async function() {
-    if (!this.isModified('password')) return;
-    
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-});
-
-// Method to check password
 userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);
