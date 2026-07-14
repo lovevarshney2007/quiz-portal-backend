@@ -36,7 +36,12 @@ const updateExamSchema = Joi.object({
     ).optional()
 });
 
+const extendExamSchema = Joi.object({
+    extraMinutes: Joi.number().min(1).required()
+});
+
 module.exports = {
     createExamSchema,
-    updateExamSchema
+    updateExamSchema,
+    extendExamSchema
 };

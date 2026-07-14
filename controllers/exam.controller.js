@@ -13,7 +13,7 @@ const getExam = catchAsync(async (req, res) => {
 });
 
 const getAllExams = catchAsync(async (req, res) => {
-    const exams = await examService.getAllExams(req.query);
+    const exams = await examService.getAllExams(req.query, req.user.role);
     res.status(200).json({ status: 'success', data: { exams } });
 });
 
@@ -57,6 +57,21 @@ const archiveExam = catchAsync(async (req, res) => {
     res.status(200).json({ status: 'success', data: { exam } });
 });
 
+const extendExam = catchAsync(async (req, res) => {
+    const exam = await examService.extendExam(req.params.id, req.body.extraMinutes);
+    res.status(200).json({ status: 'success', data: { exam } });
+});
+
+const duplicateExam = catchAsync(async (req, res) => {
+    const exam = await examService.duplicateExam(req.params.id, req.user._id);
+    res.status(201).json({ status: 'success', data: { exam } });
+});
+
+const forceSubmit = catchAsync(async (req, res) => {
+    const attempt = await examService.forceSubmit(req.params.id, req.params.studentId);
+    res.status(200).json({ status: 'success', data: { attempt } });
+});
+
 const syncStudentResponse = catchAsync(async (req, res) => {
     const { responses, violationCount } = req.body;
     await examService.saveStudentResponse(req.params.id, req.user._id, responses, violationCount);
@@ -75,5 +90,8 @@ module.exports = {
     resumeExam,
     completeExam,
     archiveExam,
+    extendExam,
+    duplicateExam,
+    forceSubmit,
     syncStudentResponse
 };

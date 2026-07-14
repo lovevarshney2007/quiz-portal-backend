@@ -2,7 +2,7 @@ const express = require('express');
 const examController = require('../controllers/exam.controller');
 const { protect, authorize } = require('../middlewares/auth.middleware');
 const validate = require('../middlewares/validate.middleware');
-const { createExamSchema, updateExamSchema } = require('../validators/exam.validator');
+const { createExamSchema, updateExamSchema, extendExamSchema } = require('../validators/exam.validator');
 const ROLES = require('../constants/roles');
 
 const router = express.Router();
@@ -25,5 +25,8 @@ router.patch('/:id/pause', examController.pauseExam);
 router.patch('/:id/resume', examController.resumeExam);
 router.patch('/:id/complete', examController.completeExam);
 router.patch('/:id/archive', examController.archiveExam);
+router.patch('/:id/extend', validate(extendExamSchema), examController.extendExam);
+router.post('/:id/duplicate', examController.duplicateExam);
+router.post('/:id/force-submit/:studentId', examController.forceSubmit);
 
 module.exports = router;

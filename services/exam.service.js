@@ -15,13 +15,17 @@ class ExamService {
         return exam;
     }
 
-    async getAllExams(query) {
+    async getAllExams(query, userRole) {
         const page = parseInt(query.page, 10) || 1;
         const limit = parseInt(query.limit, 10) || 10;
         const skip = (page - 1) * limit;
 
         const filter = {};
-        if (query.status) filter.status = query.status;
+        if (query.status) {
+            filter.status = query.status;
+        } else if (userRole === 'Student') {
+            filter.status = { $in: ['Published', 'Started'] };
+        }
 
         return await examRepository.findAll(filter, { createdAt: -1 }, skip, limit);
     }
@@ -49,7 +53,6 @@ class ExamService {
         const exam = await this.getExamById(examId);
         if (exam.status !== 'Published') throw new CustomError('Only published exams can be started', 400);
         const startedExam = await examRepository.updateStatus(examId, 'Started');
-        // Redis caching logic can go here
         return startedExam;
     }
 
@@ -69,7 +72,6 @@ class ExamService {
         const exam = await this.getExamById(examId);
         if (exam.status !== 'Started') throw new CustomError('Only started exams can be completed', 400);
         const completedExam = await examRepository.updateStatus(examId, 'Completed');
-        // Add job to resultQueue here if BullMQ is set up
         return completedExam;
     }
 
@@ -77,6 +79,53 @@ class ExamService {
         const exam = await this.getExamById(examId);
         if (exam.status !== 'Completed') throw new CustomError('Only completed exams can be archived', 400);
         return await examRepository.updateStatus(examId, 'Archived');
+    }
+
+    async extendExam(examId, extraMinutes) {
+        const exam = await this.getExamById(examId);
+        if (exam.status === 'Completed' || exam.status === 'Archived') {
+            throw new CustomError('Cannot extend a completed or archived exam', 400);
+        }
+        
+        const newEndTime = new Date(exam.endTime.getTime() + extraMinutes * 60000);
+        const newDuration = exam.duration + extraMinutes;
+        
+        return await examRepository.update(examId, { endTime: newEndTime, duration: newDuration });
+    }
+
+    async duplicateExam(examId, userId) {
+        const exam = await this.getExamById(examId);
+        const examData = exam.toObject();
+        delete examData._id;
+        delete examData.createdAt;
+        delete examData.updatedAt;
+        
+        examData.title = `${examData.title} (Copy)`;
+        examData.status = 'Draft';
+        examData.createdBy = userId;
+        
+        const newExam = await examRepository.create(examData);
+        
+        // Clone all questions
+        const questions = await questionRepository.findByExamId(examId);
+        if (questions.length > 0) {
+            const newQuestions = questions.map(q => {
+                const qObj = q.toObject();
+                delete qObj._id;
+                delete qObj.createdAt;
+                delete qObj.updatedAt;
+                qObj.exam = newExam._id;
+                return qObj;
+            });
+            await questionRepository.insertMany(newQuestions);
+        }
+        
+        return newExam;
+    }
+
+    async forceSubmit(examId, studentId) {
+        const attemptService = require('./attempt.service');
+        return await attemptService.submitExam(studentId, examId, true);
     }
 
     async saveStudentResponse(examId, studentId, responses, violationCount) {
