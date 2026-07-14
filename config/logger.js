@@ -17,14 +17,35 @@ const logger = winston.createLogger({
     ]
 });
 
-// If we're not in production then log to the `console`
+const authLogger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+    transports: [new winston.transports.File({ filename: 'logs/auth.log' })]
+});
+
+const adminLogger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+    transports: [new winston.transports.File({ filename: 'logs/admin-actions.log' })]
+});
+
+const securityLogger = winston.createLogger({
+    level: 'warn',
+    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+    transports: [new winston.transports.File({ filename: 'logs/security.log' })]
+});
+
 if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston.transports.Console({
-        format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple()
-        )
-    }));
+    const consoleFormat = winston.format.combine(winston.format.colorize(), winston.format.simple());
+    logger.add(new winston.transports.Console({ format: consoleFormat }));
+    authLogger.add(new winston.transports.Console({ format: consoleFormat }));
+    adminLogger.add(new winston.transports.Console({ format: consoleFormat }));
+    securityLogger.add(new winston.transports.Console({ format: consoleFormat }));
 }
 
-module.exports = logger;
+module.exports = {
+    logger,
+    authLogger,
+    adminLogger,
+    securityLogger
+};

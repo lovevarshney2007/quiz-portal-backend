@@ -3,6 +3,7 @@ const examController = require('../controllers/exam.controller');
 const { protect, authorize } = require('../middlewares/auth.middleware');
 const validate = require('../middlewares/validate.middleware');
 const { createExamSchema, updateExamSchema, extendExamSchema } = require('../validators/exam.validator');
+const auditLog = require('../middlewares/audit.middleware');
 const ROLES = require('../constants/roles');
 
 const router = express.Router();
@@ -16,17 +17,17 @@ router.post('/:id/autosave', authorize(ROLES.STUDENT), examController.syncStuden
 // Admin only routes
 router.use(authorize(ROLES.ADMIN));
 
-router.post('/', validate(createExamSchema), examController.createExam);
-router.patch('/:id', validate(updateExamSchema), examController.updateExam);
-router.delete('/:id', examController.deleteExam);
-router.patch('/:id/publish', examController.publishExam);
-router.patch('/:id/start', examController.startExam);
-router.patch('/:id/pause', examController.pauseExam);
-router.patch('/:id/resume', examController.resumeExam);
-router.patch('/:id/complete', examController.completeExam);
-router.patch('/:id/archive', examController.archiveExam);
-router.patch('/:id/extend', validate(extendExamSchema), examController.extendExam);
-router.post('/:id/duplicate', examController.duplicateExam);
-router.post('/:id/force-submit/:studentId', examController.forceSubmit);
+router.post('/', validate(createExamSchema), auditLog('CREATE_EXAM'), examController.createExam);
+router.patch('/:id', validate(updateExamSchema), auditLog('UPDATE_EXAM'), examController.updateExam);
+router.delete('/:id', auditLog('DELETE_EXAM'), examController.deleteExam);
+router.patch('/:id/publish', auditLog('PUBLISH_EXAM'), examController.publishExam);
+router.patch('/:id/start', auditLog('START_EXAM'), examController.startExam);
+router.patch('/:id/pause', auditLog('PAUSE_EXAM'), examController.pauseExam);
+router.patch('/:id/resume', auditLog('RESUME_EXAM'), examController.resumeExam);
+router.patch('/:id/complete', auditLog('COMPLETE_EXAM'), examController.completeExam);
+router.patch('/:id/archive', auditLog('ARCHIVE_EXAM'), examController.archiveExam);
+router.patch('/:id/extend', validate(extendExamSchema), auditLog('EXTEND_EXAM'), examController.extendExam);
+router.post('/:id/duplicate', auditLog('DUPLICATE_EXAM'), examController.duplicateExam);
+router.post('/:id/force-submit/:studentId', auditLog('FORCE_SUBMIT'), examController.forceSubmit);
 
 module.exports = router;
