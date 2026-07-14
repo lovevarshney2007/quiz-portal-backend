@@ -20,6 +20,14 @@ class ExamRepository {
     async delete(id) {
         return await Exam.findByIdAndDelete(id);
     }
+
+    async updateStatus(id, status) {
+        return await Exam.findByIdAndUpdate(id, { status }, { new: true });
+    }
+
+    async countByFilter(filter = {}) {
+        return await Exam.countDocuments(filter);
+    }
 }
 
 module.exports = new ExamRepository();

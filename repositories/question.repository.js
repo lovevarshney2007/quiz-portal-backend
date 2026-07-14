@@ -5,8 +5,9 @@ class QuestionRepository {
         return await Question.create(questionData);
     }
 
+    // CRITICAL FIX: Query uses 'exam' field (matching Question.js schema), NOT 'examId'
     async findByExamId(examId) {
-        return await Question.find({ examId });
+        return await Question.find({ exam: examId }).sort({ order: 1 });
     }
 
     async findById(id) {
@@ -23,6 +24,14 @@ class QuestionRepository {
 
     async insertMany(questionsData) {
         return await Question.insertMany(questionsData);
+    }
+
+    async countByExamId(examId) {
+        return await Question.countDocuments({ exam: examId });
+    }
+
+    async deleteByExamId(examId) {
+        return await Question.deleteMany({ exam: examId });
     }
 }
 

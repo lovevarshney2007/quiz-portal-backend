@@ -9,15 +9,27 @@ class ResultRepository {
         return await Result.findOne({ attemptId });
     }
 
-    async findByExamAndUser(examId, userId) {
-        return await Result.findOne({ examId, userId });
+    // CRITICAL FIX: Uses 'student' and 'exam' fields (matching Result.js schema)
+    async findByStudentAndExam(studentId, examId) {
+        return await Result.findOne({ student: studentId, exam: examId });
     }
 
+    async findByExamId(examId) {
+        return await Result.find({ exam: examId })
+            .populate('student', 'name studentNumber email')
+            .sort({ totalScore: -1, completionTime: 1 });
+    }
+
+    // CRITICAL FIX: Populates 'student' not 'userId', queries 'exam' not 'examId'
     async getExamLeaderboard(examId, limit = 100) {
-        return await Result.find({ examId })
-            .sort({ score: -1, timeTaken: 1 })
+        return await Result.find({ exam: examId })
+            .sort({ totalScore: -1, completionTime: 1 })
             .limit(limit)
-            .populate('userId', 'fullName studentNumber branch section year');
+            .populate('student', 'name studentNumber email');
+    }
+
+    async countByFilter(filter = {}) {
+        return await Result.countDocuments(filter);
     }
 }
 

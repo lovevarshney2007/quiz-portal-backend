@@ -7,26 +7,26 @@ const getLeaderboard = catchAsync(async (req, res) => {
 
     const leaderboard = await resultRepository.getExamLeaderboard(examId, limit);
 
-    // Calculate Ranks dynamically
-    const rankedLeaderboard = leaderboard.map((result, index) => {
-        return {
-            rank: index + 1,
-            studentName: result.userId.fullName,
-            studentNumber: result.userId.studentNumber,
-            branch: result.userId.branch,
-            section: result.userId.section,
-            year: result.userId.year,
-            score: result.score,
-            accuracy: result.accuracy,
-            timeTaken: result.timeTaken
-        };
-    });
+    // Filter out missing student populates and map the output
+    const formattedLeaderboard = leaderboard
+        .filter(r => r.student)
+        .map(r => ({
+            studentId: r.student._id,
+            name: r.student.name,
+            studentNumber: r.student.studentNumber,
+            score: r.score,
+            accuracy: r.accuracy,
+            completionTime: r.timeTaken || 0
+        }));
 
     res.status(200).json({
         status: 'success',
-        results: rankedLeaderboard.length,
-        data: { leaderboard: rankedLeaderboard }
+        data: {
+            leaderboard: formattedLeaderboard
+        }
     });
 });
 
-module.exports = { getLeaderboard };
+module.exports = {
+    getLeaderboard
+};
