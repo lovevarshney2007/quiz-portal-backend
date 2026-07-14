@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const hpp = require('hpp');
 const mongoSanitize = require('express-mongo-sanitize');
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
+const checkBlockedIp = require('./middlewares/ipBlocker.middleware');
 
 const { globalErrorHandler } = require('./middlewares/error.middleware');
 
@@ -19,12 +21,31 @@ const violationRoutes = require('./routes/violation.routes');
 
 const app = express();
 
+// IP Blocker
+app.use(checkBlockedIp);
+
 // Security Middleware
 app.use(helmet());
+
+// Proper CORS Configuration
 app.use(cors({
-    origin: '*', // To be updated in production
-    credentials: true
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
 }));
+
+// Rate Limiters
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes.'
+});
+
+const apiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after a minute.'
+});
 
 // Body parser
 app.use(express.json({ limit: '10kb' }));
@@ -38,14 +59,14 @@ app.use(mongoSanitize());
 app.use(hpp());
 
 // Mount Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/exams', examRoutes);
-app.use('/api/v1/questions', questionRoutes);
-app.use('/api/v1/attempts', attemptRoutes);
-app.use('/api/v1/results', resultRoutes);
-app.use('/api/v1/leaderboard', leaderboardRoutes);
-app.use('/api/v1/dashboard', dashboardRoutes);
-app.use('/api/v1/violations', violationRoutes);
+app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/exams', apiLimiter, examRoutes);
+app.use('/api/v1/questions', apiLimiter, questionRoutes);
+app.use('/api/v1/attempts', apiLimiter, attemptRoutes);
+app.use('/api/v1/results', apiLimiter, resultRoutes);
+app.use('/api/v1/leaderboard', apiLimiter, leaderboardRoutes);
+app.use('/api/v1/dashboard', apiLimiter, dashboardRoutes);
+app.use('/api/v1/violations', apiLimiter, violationRoutes);
 
 // Unhandled Routes
 app.all('*', (req, res, next) => {
