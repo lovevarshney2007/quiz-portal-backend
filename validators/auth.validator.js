@@ -19,7 +19,18 @@ const loginSchema = Joi.object({
     captchaToken: Joi.string().optional()
 });
 
+const forgotPasswordSchema = Joi.object({
+    email: Joi.string().email().required(),
+    captchaToken: Joi.string().optional()
+});
+
+const resetPasswordSchema = Joi.object({
+    password: Joi.string().min(6).required()
+});
+
 module.exports = {
     registerSchema,
-    loginSchema
+    loginSchema,
+    forgotPasswordSchema,
+    resetPasswordSchema
 };
