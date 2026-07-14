@@ -42,4 +42,6 @@ const resultSchema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
+resultSchema.index({ student: 1, exam: 1 });
+
 module.exports = mongoose.model('Result', resultSchema);
