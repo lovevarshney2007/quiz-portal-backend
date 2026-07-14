@@ -15,6 +15,7 @@ const attemptRoutes = require('./routes/attempt.routes');
 const resultRoutes = require('./routes/result.routes');
 const leaderboardRoutes = require('./routes/leaderboard.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const violationRoutes = require('./routes/violation.routes');
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/v1/attempts', attemptRoutes);
 app.use('/api/v1/results', resultRoutes);
 app.use('/api/v1/leaderboard', leaderboardRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/violations', violationRoutes);
 
 // Unhandled Routes
 app.all('*', (req, res, next) => {

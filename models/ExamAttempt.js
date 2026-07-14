@@ -35,6 +35,10 @@ const examAttemptSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    isSuspicious: {
+        type: Boolean,
+        default: false
+    },
     questionMapping: [{
         questionId: {
             type: mongoose.Schema.Types.ObjectId,
