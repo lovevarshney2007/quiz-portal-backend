@@ -10,6 +10,8 @@ router.use(protect);
 
 router.post('/start', validate(startExamSchema), attemptController.startExam);
 router.post('/save', validate(autoSaveSchema), attemptController.autoSave);
+router.get('/state/:examId', attemptController.getState);
+router.get('/summary/:examId', attemptController.getSummary);
 router.post('/submit', validate(submitExamSchema), attemptController.submitExam);
 
 module.exports = router;

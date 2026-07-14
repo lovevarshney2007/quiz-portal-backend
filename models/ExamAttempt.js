@@ -26,7 +26,23 @@ const examAttemptSchema = new mongoose.Schema({
     timeSpent: {
         type: Number,
         default: 0 // In seconds
-    }
+    },
+    tabSwitchCount: {
+        type: Number,
+        default: 0
+    },
+    fullscreenExits: {
+        type: Number,
+        default: 0
+    },
+    questionMapping: [{
+        questionId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Question'
+        },
+        order: Number,
+        optionsOrder: [Number]
+    }]
 }, {
     timestamps: true
 });
