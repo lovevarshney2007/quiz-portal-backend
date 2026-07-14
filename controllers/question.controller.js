@@ -27,6 +27,26 @@ const deleteQuestion = catchAsync(async (req, res) => {
     res.status(204).json({ status: 'success', data: null });
 });
 
+const duplicateQuestion = catchAsync(async (req, res) => {
+    const question = await questionService.duplicateQuestion(req.params.id);
+    res.status(201).json({ status: 'success', data: { question } });
+});
+
+const reorderQuestions = catchAsync(async (req, res) => {
+    await questionService.reorderQuestions(req.body.updates);
+    res.status(200).json({ status: 'success', message: 'Questions reordered successfully' });
+});
+
+const moveQuestion = catchAsync(async (req, res) => {
+    const question = await questionService.moveQuestion(req.params.id, req.body.sectionId);
+    res.status(200).json({ status: 'success', data: { question } });
+});
+
+const bulkDeleteQuestions = catchAsync(async (req, res) => {
+    const count = await questionService.bulkDeleteQuestions(req.body.ids);
+    res.status(200).json({ status: 'success', message: `${count} questions deleted successfully` });
+});
+
 const importPreview = catchAsync(async (req, res) => {
     if (!req.file) {
         throw new CustomError('Please upload an excel or csv file', 400);
@@ -37,16 +57,21 @@ const importPreview = catchAsync(async (req, res) => {
     }
 
     const result = await questionService.parseBulkImportFile(req.file.buffer, examId, sectionId);
+    
+    if (!result.success) {
+        return res.status(400).json({ status: 'fail', errors: result.errors });
+    }
+    
     res.status(200).json({ status: 'success', data: result.preview });
 });
 
 const confirmImport = catchAsync(async (req, res) => {
-    const { questions } = req.body;
-    if (!questions || !Array.isArray(questions)) {
-        throw new CustomError('Questions array is required', 400);
+    const { examId, questions } = req.body;
+    if (!examId || !questions || !Array.isArray(questions)) {
+        throw new CustomError('examId and questions array are required', 400);
     }
 
-    const result = await questionService.bulkImportQuestions(questions);
+    const result = await questionService.bulkImportQuestions(examId, questions);
     res.status(201).json({ status: 'success', data: { importedCount: result.length } });
 });
 
@@ -56,6 +81,10 @@ module.exports = {
     getQuestion,
     updateQuestion,
     deleteQuestion,
+    duplicateQuestion,
+    reorderQuestions,
+    moveQuestion,
+    bulkDeleteQuestions,
     importPreview,
     confirmImport
 };
