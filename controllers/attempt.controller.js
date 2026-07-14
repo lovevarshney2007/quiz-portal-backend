@@ -8,11 +8,21 @@ const startExam = catchAsync(async (req, res) => {
 });
 
 const autoSave = catchAsync(async (req, res) => {
-    const { examId, questionId, status, givenAnswer, timeSpent } = req.body;
-    const updatedStatus = await attemptService.autoSave(req.user._id, examId, {
-        questionId, status, givenAnswer, timeSpent
-    });
-    res.status(200).json({ status: 'success', data: { status: updatedStatus } });
+    const { examId, ...payload } = req.body;
+    const state = await attemptService.autoSave(req.user._id, examId, payload);
+    res.status(200).json({ status: 'success', data: { state } });
+});
+
+const getState = catchAsync(async (req, res) => {
+    const { examId } = req.params;
+    const state = await attemptService.getState(req.user._id, examId);
+    res.status(200).json({ status: 'success', data: { state } });
+});
+
+const getSummary = catchAsync(async (req, res) => {
+    const { examId } = req.params;
+    const summary = await attemptService.getSummary(req.user._id, examId);
+    res.status(200).json({ status: 'success', data: { summary } });
 });
 
 const submitExam = catchAsync(async (req, res) => {
@@ -24,5 +34,7 @@ const submitExam = catchAsync(async (req, res) => {
 module.exports = {
     startExam,
     autoSave,
+    getState,
+    getSummary,
     submitExam
 };

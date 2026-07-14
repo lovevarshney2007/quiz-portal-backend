@@ -6,10 +6,12 @@ const startExamSchema = Joi.object({
 
 const autoSaveSchema = Joi.object({
     examId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
-    questionId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
-    status: Joi.string().valid('NotVisited', 'Visited', 'Answered', 'MarkedForReview', 'AnsweredMarkedForReview', 'Skipped').required(),
+    questionId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+    status: Joi.string().valid('NotVisited', 'Visited', 'Answered', 'MarkedForReview', 'AnsweredMarkedForReview', 'Skipped').optional(),
     givenAnswer: Joi.any().optional(),
-    timeSpent: Joi.number().optional()
+    timeSpent: Joi.number().optional(),
+    tabSwitchCount: Joi.number().optional(),
+    fullscreenExits: Joi.number().optional()
 });
 
 const submitExamSchema = Joi.object({
