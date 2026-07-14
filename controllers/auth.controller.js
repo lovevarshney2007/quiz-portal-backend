@@ -51,9 +51,27 @@ const logout = catchAsync(async (req, res) => {
     });
 });
 
+const forgotPassword = catchAsync(async (req, res) => {
+    await authService.forgotPassword(req.body.email, req.body.captchaToken);
+    res.status(200).json({
+        status: 'success',
+        message: 'Token sent to email!'
+    });
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+    await authService.resetPassword(req.params.token, req.body.password);
+    res.status(200).json({
+        status: 'success',
+        message: 'Password reset successful!'
+    });
+});
+
 module.exports = {
     register,
     login,
     refreshToken,
-    logout
+    logout,
+    forgotPassword,
+    resetPassword
 };
