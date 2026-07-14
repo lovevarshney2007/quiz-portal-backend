@@ -37,18 +37,23 @@ const startExam = catchAsync(async (req, res) => {
     res.status(200).json({ status: 'success', data: { exam } });
 });
 
+const { getIO } = require('../socket');
+
 const pauseExam = catchAsync(async (req, res) => {
     const exam = await examService.pauseExam(req.params.id);
+    getIO().to(`exam:${req.params.id}`).emit('exam_paused', { examId: req.params.id });
     res.status(200).json({ status: 'success', data: { exam } });
 });
 
 const resumeExam = catchAsync(async (req, res) => {
     const exam = await examService.resumeExam(req.params.id);
+    getIO().to(`exam:${req.params.id}`).emit('exam_resumed', { examId: req.params.id });
     res.status(200).json({ status: 'success', data: { exam } });
 });
 
 const completeExam = catchAsync(async (req, res) => {
     const exam = await examService.completeExam(req.params.id);
+    getIO().to(`exam:${req.params.id}`).emit('exam_completed', { examId: req.params.id });
     res.status(200).json({ status: 'success', data: { exam } });
 });
 
@@ -59,6 +64,11 @@ const archiveExam = catchAsync(async (req, res) => {
 
 const extendExam = catchAsync(async (req, res) => {
     const exam = await examService.extendExam(req.params.id, req.body.extraMinutes);
+    getIO().to(`exam:${req.params.id}`).emit('exam_extended', { 
+        examId: req.params.id, 
+        extraMinutes: req.body.extraMinutes,
+        newEndTime: exam.endTime
+    });
     res.status(200).json({ status: 'success', data: { exam } });
 });
 
@@ -69,6 +79,7 @@ const duplicateExam = catchAsync(async (req, res) => {
 
 const forceSubmit = catchAsync(async (req, res) => {
     const attempt = await examService.forceSubmit(req.params.id, req.params.studentId);
+    getIO().to(`exam:${req.params.id}`).emit('force_submit', { studentId: req.params.studentId });
     res.status(200).json({ status: 'success', data: { attempt } });
 });
 
