@@ -16,49 +16,110 @@ class ResultService {
         const questions = await questionRepository.findByExamId(attempt.examId);
         const questionStatuses = await attemptRepository.getQuestionStatuses(attemptId);
 
-        let score = 0;
-        let totalCorrect = 0;
-        let totalWrong = 0;
-        let totalSkipped = 0;
+        let totalScore = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let skippedQuestions = 0;
+        let totalTimeSpent = 0;
+        let maxScore = exam.totalMarks || exam.totalQuestions * 1; // Or calculate from questions
 
+        const sectionStats = {};
+        const responses = [];
+        
+        // Ensure questionMap is a map
         const questionMap = new Map();
-        questions.forEach(q => questionMap.set(q._id.toString(), q));
+        questions.forEach(q => {
+            questionMap.set(q._id.toString(), q);
+            if (q.section) {
+                if (!sectionStats[q.section]) {
+                    sectionStats[q.section] = {
+                        sectionId: q.section,
+                        title: `Section ${q.section}`, // Ideally populated from Section model
+                        score: 0, correct: 0, wrong: 0, skipped: 0
+                    };
+                }
+            }
+        });
 
         for (const status of questionStatuses) {
             const question = questionMap.get(status.questionId.toString());
             if (!question) continue;
+            
+            const timeTaken = status.timeSpent || 0;
+            totalTimeSpent += timeTaken;
+            const secId = question.section ? question.section.toString() : 'default';
+            if (!sectionStats[secId]) sectionStats[secId] = { sectionId: secId, title: 'Default', score: 0, correct: 0, wrong: 0, skipped: 0 };
+            const sec = sectionStats[secId];
+
+            let isCorrect = false;
 
             if (status.status === 'NotVisited' || status.status === 'Visited' || status.status === 'MarkedForReview' || status.status === 'Skipped') {
-                totalSkipped++;
+                skippedQuestions++;
+                sec.skipped++;
             } else if (status.status === 'Answered' || status.status === 'AnsweredMarkedForReview') {
-                const isCorrect = this.checkAnswer(question, status.givenAnswer);
+                isCorrect = this.checkAnswer(question, status.givenAnswer);
                 if (isCorrect) {
-                    totalCorrect++;
-                    score += question.marks;
+                    correctAnswers++;
+                    totalScore += question.marks;
+                    sec.correct++;
+                    sec.score += question.marks;
                 } else {
-                    totalWrong++;
-                    score -= Math.abs(question.negativeMarks || 0);
+                    wrongAnswers++;
+                    const negativeMark = Math.abs(question.negativeMarks || 0);
+                    totalScore -= negativeMark;
+                    sec.wrong++;
+                    sec.score -= negativeMark;
                 }
             }
+            
+            responses.push({
+                question: question._id,
+                markedAnswer: status.givenAnswer,
+                isCorrect,
+                timeTaken
+            });
         }
 
-        totalSkipped += (exam.totalQuestions - questionStatuses.length);
-        const accuracy = totalCorrect + totalWrong > 0 ? (totalCorrect / (totalCorrect + totalWrong)) * 100 : 0;
+        skippedQuestions += (exam.totalQuestions - questionStatuses.length);
+        const totalVisited = correctAnswers + wrongAnswers;
+        const accuracy = totalVisited > 0 ? (correctAnswers / totalVisited) * 100 : 0;
+        const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+        const averageTimePerQuestion = questionStatuses.length > 0 ? (totalTimeSpent / questionStatuses.length) : 0;
+        const completionTime = attempt.endTime ? (attempt.endTime.getTime() - attempt.startTime.getTime()) / 1000 : 0;
+
+        // Calculate accuracy per section
+        const sectionWisePerformance = Object.values(sectionStats).map(sec => {
+            const secTotal = sec.correct + sec.wrong;
+            sec.accuracy = secTotal > 0 ? (sec.correct / secTotal) * 100 : 0;
+            return sec;
+        });
 
         const resultData = {
             student: attempt.userId,
             exam: attempt.examId,
-            attemptId: attempt._id,
-            score,
-            totalCorrect,
-            totalWrong,
-            totalSkipped,
             totalQuestions: exam.totalQuestions,
+            correctAnswers,
+            wrongAnswers,
+            skippedQuestions,
+            totalScore,
+            maxScore,
             accuracy: Number(accuracy.toFixed(2)),
-            timeTaken: attempt.timeSpent || 0
+            percentage: Number(percentage.toFixed(2)),
+            averageTimePerQuestion: Number(averageTimePerQuestion.toFixed(2)),
+            completionTime,
+            isSuspicious: attempt.isSuspicious || false,
+            violationCount: (attempt.tabSwitchCount || 0) + (attempt.fullscreenExits || 0),
+            sectionWisePerformance,
+            responses
         };
 
-        return await resultRepository.create(resultData);
+        const result = await resultRepository.create(resultData);
+        
+        // Add to Redis Leaderboard
+        const redisClient = require('../config/redis');
+        await redisClient.zadd(`leaderboard:${attempt.examId}`, totalScore, attempt.userId.toString());
+        
+        return result;
     }
 
     checkAnswer(question, givenAnswer) {

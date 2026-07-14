@@ -5,18 +5,35 @@ const { catchAsync } = require('../middlewares/error.middleware');
 
 const getAdminDashboardStats = catchAsync(async (req, res) => {
     const totalStudents = await User.countDocuments({ role: 'Student' });
+    const verifiedStudents = await User.countDocuments({ role: 'Student', isEmailVerified: true });
     const totalExams = await Exam.countDocuments();
     const activeExams = await Exam.countDocuments({ status: 'Started' });
     const totalResults = await Result.countDocuments();
+    
+    // Violation stats
+    const Violation = require('../models/Violation');
+    const totalViolations = await Violation.countDocuments();
+
+    // Redis online stats
+    const redisClient = require('../config/redis');
+    const activeExamDocs = await Exam.find({ status: 'Started' }).select('_id');
+    let totalOnline = 0;
+    for (const ex of activeExamDocs) {
+        const count = await redisClient.scard(`online_students:${ex._id}`);
+        totalOnline += count;
+    }
 
     res.status(200).json({
         status: 'success',
         data: {
             stats: {
                 totalStudents,
+                verifiedStudents,
                 totalExams,
                 activeExams,
-                totalResults
+                totalResults,
+                totalViolations,
+                totalOnline
             }
         }
     });
