@@ -1,9 +1,9 @@
 const { Worker } = require('bullmq');
 const { connection } = require('../queues/resultQueue');
 const redisClient = require('../config/redis');
-const examRepository = require('../repositories/examRepository');
-const questionRepository = require('../repositories/questionRepository');
-const resultRepository = require('../repositories/resultRepository');
+const examRepository = require('../repositories/exam.repository');
+const questionRepository = require('../repositories/question.repository');
+const resultRepository = require('../repositories/result.repository');
 const logger = require('../config/logger');
 
 const resultWorker = new Worker('resultQueue', async job => {
@@ -19,8 +19,6 @@ const resultWorker = new Worker('resultQueue', async job => {
             const questionMap = new Map();
             questions.forEach(q => questionMap.set(q._id.toString(), q));
 
-            // In a real system, you'd scan for all keys related to this exam.
-            // ioredis supports keys stream or scan.
             let cursor = '0';
             const keysToProcess = [];
             do {
@@ -53,7 +51,6 @@ const resultWorker = new Worker('resultQueue', async job => {
                     } else {
                         wrongAnswers++;
                         resp.isCorrect = false;
-                        // Subtract negative marks if applicable
                     }
                 });
 
@@ -73,13 +70,13 @@ const resultWorker = new Worker('resultQueue', async job => {
                     maxScore,
                     accuracy,
                     percentage,
-                    completionTime: 0, // Should be fetched from attemptData
+                    completionTime: 0, 
                     violationCount: attemptData.violationCount || 0,
                     isSuspicious: (attemptData.violationCount || 0) > 5,
                     responses
                 };
 
-                await resultRepository.createResult(result);
+                await resultRepository.create(result);
             }
 
             logger.info(`Completed result generation for exam: ${examId}`);

@@ -1,14 +1,27 @@
 const resultService = require('../services/result.service');
+const resultRepository = require('../repositories/result.repository');
 const { catchAsync } = require('../middlewares/error.middleware');
+const { Queue } = require('bullmq');
 
-const generateResult = catchAsync(async (req, res) => {
-    const { attemptId } = req.body;
-    const result = await resultService.calculateResult(attemptId);
-    
-    res.status(201).json({
-        status: 'success',
-        data: { result }
-    });
+const resultQueue = new Queue('resultQueue', {
+    connection: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
+    }
 });
 
-module.exports = { generateResult };
+const generateResult = catchAsync(async (req, res) => {
+    const { examId } = req.body;
+    await resultQueue.add('generateResults', { examId });
+    res.status(200).json({ status: 'success', message: 'Result generation started in background' });
+});
+
+const getExamResults = catchAsync(async (req, res) => {
+    const results = await resultRepository.findByExamId(req.params.examId);
+    res.status(200).json({ status: 'success', data: { results } });
+});
+
+module.exports = {
+    generateResult,
+    getExamResults
+};

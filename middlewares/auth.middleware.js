@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const userRepository = require('../repositories/userRepository');
+const userRepository = require('../repositories/user.repository');
 
 exports.protect = async (req, res, next) => {
     try {
@@ -15,7 +15,7 @@ exports.protect = async (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userRepository.findById(decoded.userId);
+        const user = await userRepository.findById(decoded.id);
 
         if (!user) {
             return res.status(401).json({ status: 'error', message: 'User no longer exists.' });
@@ -36,3 +36,5 @@ exports.restrictTo = (...roles) => {
         next();
     };
 };
+
+exports.authorize = (...roles) => exports.restrictTo(...roles);

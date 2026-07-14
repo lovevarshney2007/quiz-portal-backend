@@ -37,19 +37,17 @@ class ResultService {
                     score += question.marks;
                 } else {
                     totalWrong++;
-                    score -= Math.abs(question.negativeMarks);
+                    score -= Math.abs(question.negativeMarks || 0);
                 }
             }
         }
 
-        // Account for unvisited questions
         totalSkipped += (exam.totalQuestions - questionStatuses.length);
-
         const accuracy = totalCorrect + totalWrong > 0 ? (totalCorrect / (totalCorrect + totalWrong)) * 100 : 0;
 
         const resultData = {
-            userId: attempt.userId,
-            examId: attempt.examId,
+            student: attempt.userId,
+            exam: attempt.examId,
             attemptId: attempt._id,
             score,
             totalCorrect,
@@ -66,16 +64,24 @@ class ResultService {
     checkAnswer(question, givenAnswer) {
         if (!givenAnswer || givenAnswer.length === 0) return false;
 
-        const correctAns = [...question.correctAnswers].sort();
-        const givenAns = [...givenAnswer].sort();
+        // Ensure correctAnswer exists (Mixed type in schema)
+        if (question.correctAnswer === null || question.correctAnswer === undefined) return false;
 
-        if (correctAns.length !== givenAns.length) return false;
+        // If options were given as an array
+        if (Array.isArray(question.correctAnswer)) {
+            const correctAns = [...question.correctAnswer].sort();
+            const givenAns = [...givenAnswer].sort();
 
-        for (let i = 0; i < correctAns.length; i++) {
-            if (correctAns[i] !== givenAns[i]) return false;
+            if (correctAns.length !== givenAns.length) return false;
+
+            for (let i = 0; i < correctAns.length; i++) {
+                if (correctAns[i] !== givenAns[i]) return false;
+            }
+            return true;
         }
 
-        return true;
+        // Single value comparison
+        return String(question.correctAnswer) === String(givenAnswer);
     }
 }
 
