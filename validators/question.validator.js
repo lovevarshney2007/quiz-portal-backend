@@ -8,7 +8,7 @@ const createQuestionSchema = Joi.object({
     options: Joi.array().items(
         Joi.object({
             text: Joi.string().required()
-        })
+        }).unknown(true)
     ).optional(),
     correctAnswer: Joi.any().required(),
     marks: Joi.number().min(0).required(),
