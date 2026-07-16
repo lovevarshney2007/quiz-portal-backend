@@ -58,6 +58,12 @@ app.use(mongoSanitize());
 // Prevent parameter pollution
 app.use(hpp());
 
+app.get('/', (req, res) => {                                                        
+        res.status(200).json({                                                          
+            status: 'success',                                                          
+            message: 'Welcome to the Quiz Portal Backend API! 🚀'                       
+        });                                                                             
+    });
 // Mount Routes
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/exams', apiLimiter, examRoutes);
