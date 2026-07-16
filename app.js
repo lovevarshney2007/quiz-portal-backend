@@ -59,11 +59,14 @@ app.use(mongoSanitize());
 app.use(hpp());
 
 app.get('/', (req, res) => {                                                        
-        res.status(200).json({                                                          
-            status: 'success',                                                          
-            message: 'Welcome to the Quiz Portal Backend API! 🚀'                       
-        });                                                                             
-    });
+        res.send(`                                                                      
+            <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+                <h1 style="color: #4CAF50;">Quiz Portal Backend is Live! 🚀</h1>        
+                <p>Please use Postman or the Frontend application to interact with the  
+  API.</p>                                                                              
+            </div>                                                                      
+        `);                                                                             
+    });  
 // Mount Routes
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/exams', apiLimiter, examRoutes);
