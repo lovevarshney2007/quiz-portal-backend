@@ -48,7 +48,7 @@ async function runTests() {
         console.log('\n[1] Creating Admin User directly in DB...');
         await mongoose.connection.db.collection('users').insertOne({
             name: 'Admin User',
-            studentNumber: '2500000000002', // Mock student number for login
+            studentNumber: '2500002', // Mock student number for login
             email: 'admin2@akgec.ac.in',
             role: 'Admin',
             isVerified: true
@@ -59,7 +59,7 @@ async function runTests() {
         let res = await fetchJSON(`${BASE_URL}/auth/login`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ email: 'admin2@akgec.ac.in', studentNumber: '2500000000002' })
+            body: JSON.stringify({ email: 'admin2@akgec.ac.in', studentNumber: '2500002' })
         });
         console.log('Status:', res.status);
         if (res.data && res.data.data && res.data.data.accessToken) {
