@@ -44,58 +44,31 @@ async function runTests() {
     const authHeaders = (t) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` });
 
     try {
-        // 1. Register User (Admin/Coord)
-        console.log('\n[1] Registering Admin...');
-        const regPayload = {
+        // 1. Create Admin User (since register endpoint is removed)
+        console.log('\n[1] Creating Admin User directly in DB...');
+        await mongoose.connection.db.collection('users').insertOne({
             name: 'Admin User',
-            studentNumber: '2500000000002',
+            studentNumber: '2500000000002', // Mock student number for login
             email: 'admin2@akgec.ac.in',
-            password: 'Password@123',
-            branch: 'CSE',
-            section: 'A',
-            year: '3',
-            role: 'Admin'
-        };
-        let res = await fetchJSON(`${BASE_URL}/auth/register`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(regPayload)
+            role: 'Admin',
+            isVerified: true
         });
-        console.log('Status:', res.status);
-        console.log('Response:', JSON.stringify(res.data, null, 2));
 
         // 2. Login User
         console.log('\n[2] Logging in...');
-        res = await fetchJSON(`${BASE_URL}/auth/login`, {
+        let res = await fetchJSON(`${BASE_URL}/auth/login`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ email: 'admin2@akgec.ac.in', password: 'Password@123' })
+            body: JSON.stringify({ email: 'admin2@akgec.ac.in', studentNumber: '2500000000002' })
         });
         console.log('Status:', res.status);
-        if (res.data.data && res.data.data.accessToken) {
+        if (res.data && res.data.data && res.data.data.accessToken) {
             token = res.data.data.accessToken;
             console.log('Token acquired.');
         } else {
             console.log('Response:', JSON.stringify(res.data, null, 2));
             return;
         }
-
-        // Wait, the registered user defaults to Student. To create an exam, they need ADMIN role.
-        // I will need to modify the DB manually or add an endpoint for role, but for now I can just test Student dashboard.
-        // Wait, let's update the user role directly in DB to Admin.
-        await mongoose.connection.db.collection('users').updateOne(
-            { email: 'admin2@akgec.ac.in' },
-            { $set: { role: 'Admin' } }
-        );
-        console.log('Updated user role to Admin directly in DB.');
-        
-        // Relogin to get Admin token
-        res = await fetchJSON(`${BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ email: 'admin2@akgec.ac.in', password: 'Password@123' })
-        });
-        token = res.data.data.accessToken;
 
         // 3. Create Exam
         console.log('\n[3] Creating Exam...');

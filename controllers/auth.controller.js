@@ -1,18 +1,9 @@
 const authService = require('../services/auth.service');
 const { catchAsync } = require('../middlewares/error.middleware');
 
-const register = catchAsync(async (req, res) => {
-    const { captchaToken, ...userData } = req.body;
-    const user = await authService.register(userData, captchaToken);
-    res.status(201).json({
-        status: 'success',
-        data: { user }
-    });
-});
-
 const login = catchAsync(async (req, res) => {
-    const { email, password, captchaToken } = req.body;
-    const { user, accessToken, refreshToken } = await authService.login(email, password, captchaToken);
+    const { email, studentNumber, captchaToken } = req.body;
+    const { user, accessToken, refreshToken } = await authService.login(email, studentNumber, captchaToken);
     
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
@@ -51,27 +42,8 @@ const logout = catchAsync(async (req, res) => {
     });
 });
 
-const forgotPassword = catchAsync(async (req, res) => {
-    await authService.forgotPassword(req.body.email, req.body.captchaToken);
-    res.status(200).json({
-        status: 'success',
-        message: 'Token sent to email!'
-    });
-});
-
-const resetPassword = catchAsync(async (req, res) => {
-    await authService.resetPassword(req.params.token, req.body.password);
-    res.status(200).json({
-        status: 'success',
-        message: 'Password reset successful!'
-    });
-});
-
 module.exports = {
-    register,
     login,
     refreshToken,
-    logout,
-    forgotPassword,
-    resetPassword
+    logout
 };
