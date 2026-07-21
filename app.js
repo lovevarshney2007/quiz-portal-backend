@@ -35,7 +35,30 @@ app.use(helmet());
 // }));
 
 //temporary cors config
-app.use(cors());
+// app.use(cors());
+// Remove or comment out the temporary app.use(cors());
+
+const allowedOrigins = [
+    process.env.FRONTEND_URL, 
+    'https://quiz-neon-three.vercel.app', // Your deployed Vercel frontend
+    'http://localhost:3000', 
+    'http://localhost:5173'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
+}));
 
 // Rate Limiters
 const authLimiter = rateLimit({
