@@ -28,11 +28,14 @@ app.use(checkBlockedIp);
 app.use(helmet());
 
 // Proper CORS Configuration
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000' || 'http://localhost:5173',//removed frontend URL from here and added it into Render .env for security
-    credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
-}));
+// app.use(cors({
+//     origin: process.env.FRONTEND_URL || 'http://localhost:3000' || 'http://localhost:5173',//removed frontend URL from here and added it into Render .env for security
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
+// }));
+
+//temporary cors config
+app.use(cors());
 
 // Rate Limiters
 const authLimiter = rateLimit({
