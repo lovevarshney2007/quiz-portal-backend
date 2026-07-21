@@ -28,6 +28,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=redis
     ports:
       - '5000:5000'
     depends_on:
