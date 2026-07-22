@@ -1,10 +1,7 @@
 const { Queue } = require('bullmq');
+const redisClient = require('../config/redis');
 
-const connection = {
-    host: process.env.REDIS_HOST || '127.0.0.1',
-    port: process.env.REDIS_PORT || 6379,
-    password: process.env.REDIS_PASSWORD || undefined,
-};
+const connection = redisClient.redisConfig;
 
 const resultQueue = new Queue('resultQueue', { connection });
 

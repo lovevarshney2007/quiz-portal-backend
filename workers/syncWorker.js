@@ -33,10 +33,7 @@ const syncWorker = new Worker('syncQueue', async job => {
         }
     }
 }, {
-    connection: {
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT
-    }
+    connection: redisClient.redisConfig
 });
 
 module.exports = syncWorker;

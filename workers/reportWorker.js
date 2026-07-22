@@ -5,6 +5,7 @@ const User = require('../models/User');
 const exceljs = require('exceljs'); // Assuming exceljs is installed per Phase 3
 const fs = require('fs');
 const path = require('path');
+const redisClient = require('../config/redis');
 
 const reportWorker = new Worker('reportQueue', async job => {
     if (job.name === 'generateExamReport') {
@@ -48,10 +49,7 @@ const reportWorker = new Worker('reportQueue', async job => {
         return { filePath };
     }
 }, {
-    connection: {
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT
-    }
+    connection: redisClient.redisConfig
 });
 
 module.exports = reportWorker;

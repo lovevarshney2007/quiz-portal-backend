@@ -184,10 +184,7 @@ class AttemptService {
         // Trigger result generation
         const { Queue } = require('bullmq');
         const resultQueue = new Queue('resultQueue', {
-            connection: {
-                host: process.env.REDIS_HOST,
-                port: process.env.REDIS_PORT
-            }
+            connection: redisClient.redisConfig
         });
         await resultQueue.add('generateResults', { examId });
 
