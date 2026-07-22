@@ -34,6 +34,7 @@ PORT=5000
 MONGO_URI=mongodb://admin:password@localhost:27017/quiz_portal?authSource=admin
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
+# REDIS_URL=rediss://default:your_password@your_upstash_host:6379 (Optional, use instead of HOST/PORT for cloud Redis)
 JWT_SECRET=supersecretaccesskey_change_in_production
 JWT_REFRESH_SECRET=supersecretrefreshkey_change_in_production
 RECAPTCHA_SECRET_KEY=your_google_recaptcha_secret_key_here
@@ -69,7 +70,7 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
 ```json
 {
   "email": "love2510084@akgec.ac.in",
-  "password": "SecurePassword123!",
+  "studentNumber": "2510084",
   "captchaToken": "mock_token"
 }
 ```
