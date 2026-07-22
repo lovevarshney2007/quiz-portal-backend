@@ -1,4 +1,5 @@
 const { Worker } = require('bullmq');
+const Redis = require('ioredis');
 const Result = require('../models/Result');
 const Exam = require('../models/Exam');
 const User = require('../models/User');
@@ -49,7 +50,7 @@ const reportWorker = new Worker('reportQueue', async job => {
         return { filePath };
     }
 }, {
-    connection: redisClient.redisConfig
+    connection: new Redis(redisClient.redisConfig, { maxRetriesPerRequest: null })
 });
 
 module.exports = reportWorker;

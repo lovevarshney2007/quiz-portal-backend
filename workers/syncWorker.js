@@ -1,4 +1,5 @@
 const { Worker } = require('bullmq');
+const Redis = require('ioredis');
 const redisClient = require('../config/redis');
 const Attempt = require('../models/ExamAttempt');
 const attemptRepository = require('../repositories/attempt.repository');
@@ -33,7 +34,7 @@ const syncWorker = new Worker('syncQueue', async job => {
         }
     }
 }, {
-    connection: redisClient.redisConfig
+    connection: new Redis(redisClient.redisConfig, { maxRetriesPerRequest: null })
 });
 
 module.exports = syncWorker;

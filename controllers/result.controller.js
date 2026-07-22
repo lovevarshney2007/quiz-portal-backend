@@ -2,10 +2,11 @@ const resultService = require('../services/result.service');
 const resultRepository = require('../repositories/result.repository');
 const { catchAsync } = require('../middlewares/error.middleware');
 const { Queue } = require('bullmq');
+const Redis = require('ioredis');
 const redisClient = require('../config/redis');
 
 const resultQueue = new Queue('resultQueue', {
-    connection: redisClient.redisConfig
+    connection: new Redis(redisClient.redisConfig, { maxRetriesPerRequest: null })
 });
 
 const generateResult = catchAsync(async (req, res) => {
