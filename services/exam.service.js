@@ -123,9 +123,22 @@ class ExamService {
         return newExam;
     }
 
-    async forceSubmit(examId, studentId) {
+    async forceSubmit(examId, studentIdentifier) {
         const attemptService = require('./attempt.service');
-        return await attemptService.submitExam(studentId, examId, true);
+        const mongoose = require('mongoose');
+        
+        let userId = studentIdentifier;
+        if (!mongoose.Types.ObjectId.isValid(studentIdentifier)) {
+            const User = require('../models/User');
+            const user = await User.findOne({ studentNumber: studentIdentifier });
+            if (!user) {
+                const CustomError = require('../utils/customError');
+                throw new CustomError('Student not found', 404);
+            }
+            userId = user._id;
+        }
+
+        return await attemptService.submitExam(userId, examId, true);
     }
 
     async saveStudentResponse(examId, studentId, responses, violationCount) {

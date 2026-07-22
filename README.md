@@ -124,7 +124,6 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
   "duration": 90,
   "startTime": "2026-08-01T10:00:00Z",
   "endTime": "2026-08-01T11:30:00Z",
-  "totalMarks": 100,
   "passingMarks": 40,
   "sections": [
     {
@@ -254,6 +253,14 @@ Saves responses directly into Redis caching. Handled via intervals on the fronte
 ## 🛠 Real-Time Tracking (WebSockets)
 Socket.IO runs on the same port (`5000`).
 Connect to `http://localhost:5000` from the frontend using the `socket.io-client`.
-**Emittable Events:**
+**Client Emits (to Server):**
+- `join_exam`: `{ "examId": "..." }`
+
+**Server Emits (to clients in the exam room):**
 - `student_online`: `{ "studentId": "..." }`
-- `exam_started`: `{ "examId": "...", "studentId": "..." }`
+- `student_offline`: `{ "studentId": "..." }`
+- `exam_paused`: `{ "examId": "..." }`
+- `exam_resumed`: `{ "examId": "..." }`
+- `exam_completed`: `{ "examId": "..." }`
+- `exam_extended`: `{ "examId": "...", "extraMinutes": 10, "newEndTime": "..." }`
+- `force_submit`: `{ "studentId": "..." }`
