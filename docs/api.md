@@ -29,7 +29,7 @@
 - **POST** `/attempts/submit`: Manually submit exam
 
 ## Results & Leaderboard
-- **POST** `/results/generate`: Generate result manually (Body: `attemptId`)
+- **POST** `/results/generate`: Generate result manually (Body: `examId`)
 - **GET** `/leaderboard/:examId`: Get ranked leaderboard
 
 ## Dashboard

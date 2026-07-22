@@ -62,30 +62,6 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
 
 ### 1. Authentication APIs
 
-#### Register a Student
-*Constraint: `studentNumber` must start with 25 and have 7-8 digits. `email` must end with `@akgec.ac.in` and contain the student number.*
-
-- **Method**: `POST`
-- **URL**: `/api/v1/auth/register`
-- **Request Body**:
-```json
-{
-  "role": "Student",
-  "name": "Love Varshney",
-  "studentNumber": "2510084",
-  "email": "love2510084@akgec.ac.in",
-  "password": "SecurePassword123!",
-  "captchaToken": "mock_token"
-}
-```
-- **Response**: `201 Created`
-```json
-{
-  "status": "success",
-  "message": "Registration successful. You can now login."
-}
-```
-
 #### Login
 - **Method**: `POST`
 - **URL**: `/api/v1/auth/login`
@@ -233,30 +209,44 @@ Upload a `.xlsx` file using `multipart/form-data`.
 
 ### 4. Student Exam Flow (Student Only)
 
-#### Auto-save Responses
-Saves responses directly into Redis caching. Handled via intervals on the frontend.
+*Require Authorization header: `Bearer <accessToken>`*
+
+#### Start Exam Attempt
 - **Method**: `POST`
-- **URL**: `/api/v1/exams/:id/autosave`
+- **URL**: `/api/v1/attempts/start`
 - **Request Body**:
 ```json
 {
-  "responses": [
-    {
-      "questionId": "60d0fe4f5311236168a109cd",
-      "markedAnswer": "C",
-      "timeTaken": 45
-    }
-  ],
-  "violationCount": 2
+  "examId": "6a5fc5d770bb2564538a119d"
+}
+```
+
+#### Auto-save Responses
+Saves responses directly into Redis caching. Handled via intervals on the frontend.
+- **Method**: `POST`
+- **URL**: `/api/v1/attempts/save`
+- **Request Body**:
+```json
+{
+  "examId": "6a5fc5d770bb2564538a119d",
+  "questionId": "6a5fc5d870bb2564538a11a0",
+  "status": "Answered",
+  "givenAnswer": ["B"],
+  "timeSpent": 10
 }
 ```
 - **Response**: `200 OK`
+
+#### Submit Exam
+- **Method**: `POST`
+- **URL**: `/api/v1/attempts/submit`
+- **Request Body**:
 ```json
 {
-  "status": "success",
-  "message": "Response auto-saved"
+  "examId": "6a5fc5d770bb2564538a119d"
 }
 ```
+- **Response**: `200 OK`
 
 ---
 

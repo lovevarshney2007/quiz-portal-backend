@@ -44,57 +44,31 @@ async function runTests() {
     const authHeaders = (t) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` });
 
     try {
-        // 1. Register User (Admin/Coord)
-        console.log('\n[1] Registering Admin...');
-        const regPayload = {
-            fullName: 'Admin User',
-            studentNumber: '2500000000002',
+        // 1. Create Admin User (since register endpoint is removed)
+        console.log('\n[1] Creating Admin User directly in DB...');
+        await mongoose.connection.db.collection('users').insertOne({
+            name: 'Admin User',
+            studentNumber: '2500002', // Mock student number for login
             email: 'admin2@akgec.ac.in',
-            password: 'Password@123',
-            branch: 'CSE',
-            section: 'A',
-            year: '3'
-        };
-        let res = await fetchJSON(`${BASE_URL}/auth/register`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(regPayload)
+            role: 'Admin',
+            isVerified: true
         });
-        console.log('Status:', res.status);
-        console.log('Response:', JSON.stringify(res.data, null, 2));
 
         // 2. Login User
         console.log('\n[2] Logging in...');
-        res = await fetchJSON(`${BASE_URL}/auth/login`, {
+        let res = await fetchJSON(`${BASE_URL}/auth/login`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ email: 'admin2@akgec.ac.in', password: 'Password@123' })
+            body: JSON.stringify({ email: 'admin2@akgec.ac.in', studentNumber: '2500002' })
         });
         console.log('Status:', res.status);
-        if (res.data.data && res.data.data.accessToken) {
+        if (res.data && res.data.data && res.data.data.accessToken) {
             token = res.data.data.accessToken;
             console.log('Token acquired.');
         } else {
             console.log('Response:', JSON.stringify(res.data, null, 2));
             return;
         }
-
-        // Wait, the registered user defaults to Student. To create an exam, they need ADMIN role.
-        // I will need to modify the DB manually or add an endpoint for role, but for now I can just test Student dashboard.
-        // Wait, let's update the user role directly in DB to Admin.
-        await mongoose.connection.db.collection('users').updateOne(
-            { email: 'admin2@akgec.ac.in' },
-            { $set: { role: 'Admin' } }
-        );
-        console.log('Updated user role to Admin directly in DB.');
-        
-        // Relogin to get Admin token
-        res = await fetchJSON(`${BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ email: 'admin2@akgec.ac.in', password: 'Password@123' })
-        });
-        token = res.data.data.accessToken;
 
         // 3. Create Exam
         console.log('\n[3] Creating Exam...');
@@ -105,7 +79,9 @@ async function runTests() {
             startTime: new Date(Date.now() - 10000).toISOString(), // started in past
             endTime: new Date(Date.now() + 3600000).toISOString(), // ends in 1 hour
             duration: 60,
-            status: 'Published'
+            status: 'Published',
+            passingMarks: 33,
+            sections: [{ title: 'Section A', order: 1, marks: 4 }]
         };
         res = await fetchJSON(`${BASE_URL}/exams`, {
             method: 'POST',
@@ -116,22 +92,25 @@ async function runTests() {
         console.log('Response:', JSON.stringify(res.data, null, 2));
         examId = res.data?.data?.exam?._id;
 
-        if (examId) {
+        const sectionId = res.data?.data?.exam?.sections?.[0]?._id;
+
+        if (examId && sectionId) {
             // 4. Create Question
             console.log('\n[4] Creating Question...');
             const qPayload = {
-                examId,
-                type: 'SingleCorrect',
+                exam: examId,
+                section: sectionId,
+                type: 'Single Correct',
                 questionText: 'What is 2+2?',
                 options: [
                     { id: 'A', text: '3' },
                     { id: 'B', text: '4' },
                     { id: 'C', text: '5' }
                 ],
-                correctAnswers: ['B'],
-                subject: 'Math',
+                correctAnswer: ['B'],
                 marks: 4,
-                negativeMarks: -1
+                negativeMarks: 1,
+                order: 1
             };
             res = await fetchJSON(`${BASE_URL}/questions`, {
                 method: 'POST',
@@ -188,7 +167,7 @@ async function runTests() {
             res = await fetchJSON(`${BASE_URL}/results/generate`, {
                 method: 'POST',
                 headers: authHeaders(token),
-                body: JSON.stringify({ attemptId })
+                body: JSON.stringify({ examId })
             });
             console.log('Status:', res.status);
             console.log('Response:', JSON.stringify(res.data, null, 2));

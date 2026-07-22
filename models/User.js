@@ -46,12 +46,7 @@ const userSchema = new mongoose.Schema({
             message: props => `${props.value} is not a valid AKGEC email or does not match student number!`
         }
     },
-    password: {
-        type: String,
-        required: true,
-        minlength: 6,
-        select: false // Do not return by default
-    },
+
     isVerified: {
         type: Boolean,
         default: true // Skipping OTP for now based on user instruction
@@ -63,23 +58,6 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String
     },
-    passwordResetToken: String,
-    passwordResetExpires: Date
 }, { timestamps: true });
-
-userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
-});
-
-userSchema.methods.comparePassword = async function(candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
-};
 
 module.exports = mongoose.model('User', userSchema);
