@@ -4,7 +4,7 @@ const redisClient = require('../config/redis');
 const examRepository = require('../repositories/exam.repository');
 const questionRepository = require('../repositories/question.repository');
 const resultRepository = require('../repositories/result.repository');
-const logger = require('../config/logger');
+const { logger } = require('../config/logger');
 
 const resultWorker = new Worker('resultQueue', async job => {
     if (job.name === 'generateResults') {

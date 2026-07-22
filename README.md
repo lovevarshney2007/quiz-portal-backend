@@ -11,6 +11,19 @@ Enterprise-grade online examination backend for Ajay Kumar Garg Engineering Coll
 
 ---
 
+## 🛠 Tech Stack
+
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB (via Mongoose)
+- **Caching & State**: Redis (via ioredis)
+- **Background Jobs**: BullMQ
+- **Real-Time Communication**: Socket.io
+- **Authentication**: JWT & bcrypt
+- **Security**: Helmet, Express Rate Limit, Mongo Sanitize, HPP, XSS-Clean
+
+---
+
 ## 🚀 Setup & Installation
 
 ### 1. Environment Configuration
