@@ -30,7 +30,7 @@ class AuthService {
             throw new CustomError('Invalid email or student number', 401);
         }
 
-        const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
         await userRepository.updateRefreshToken(user._id, refreshToken);
@@ -44,7 +44,7 @@ class AuthService {
             const user = await userRepository.findById(decoded.id);
             if (!user || user.refreshToken !== token) throw new CustomError('Invalid refresh token', 401);
 
-            const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+            const accessToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
             const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
             await userRepository.updateRefreshToken(user._id, refreshToken);
