@@ -13,7 +13,7 @@ const createQuestionSchema = Joi.object({
     correctAnswer: Joi.any().required(),
     marks: Joi.number().min(0).required(),
     negativeMarks: Joi.number().min(0).optional(),
-    explanation: Joi.string().optional(),
+    explanation: Joi.string().allow('').optional(),
     difficulty: Joi.string().valid('Easy', 'Medium', 'Hard').optional(),
     order: Joi.number().required()
 });
@@ -31,7 +31,7 @@ const updateQuestionSchema = Joi.object({
     correctAnswer: Joi.any().optional(),
     marks: Joi.number().min(0).optional(),
     negativeMarks: Joi.number().min(0).optional(),
-    explanation: Joi.string().optional(),
+    explanation: Joi.string().allow('').optional(),
     difficulty: Joi.string().valid('Easy', 'Medium', 'Hard').optional(),
     order: Joi.number().optional()
 });

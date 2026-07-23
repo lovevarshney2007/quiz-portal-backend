@@ -162,7 +162,12 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
 
 ### 3. Question Import (Admin Only)
 
-#### Preview Bulk Import (Excel)
+**Architecture Note:** This backend uses a **2-Step "Review and Confirm" Flow** for bulk importing questions. 
+1. The frontend uploads the Excel file to `/import-preview`.
+2. The frontend displays the parsed JSON to the Admin for review.
+3. The frontend sends the approved JSON to `/confirm-import` to save it in the database.
+
+#### Step 1: Preview Bulk Import (Excel)
 Upload a `.xlsx` file using `multipart/form-data`.
 - **Method**: `POST`
 - **URL**: `/api/v1/questions/import-preview`
@@ -172,12 +177,13 @@ Upload a `.xlsx` file using `multipart/form-data`.
   - `sectionId`: `60d0fe4f5311236168a109cc`
 - **Response**: `200 OK` (Returns the parsed JSON array of questions to review).
 
-#### Confirm Bulk Import
+#### Step 2: Confirm Bulk Import
 - **Method**: `POST`
 - **URL**: `/api/v1/questions/confirm-import`
 - **Request Body**:
 ```json
 {
+  "examId": "60d0fe4f5311236168a109cb",
   "questions": [
     {
       "exam": "60d0fe4f5311236168a109cb",
@@ -190,7 +196,9 @@ Upload a `.xlsx` file using `multipart/form-data`.
         { "id": "C", "text": "O(log n)" },
         { "id": "D", "text": "O(n log n)" }
       ],
-      "correctAnswer": "C",
+      "correctAnswer": "O(log n)",
+      "explanation": "",
+      "difficulty": "Medium",
       "marks": 4,
       "order": 1
     }

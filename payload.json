@@ -1,0 +1,1447 @@
+{
+    "examId": "6a60846e06ba2683731f1f8c",
+    "questions": [
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which HTML5 tag is specifically used for independent, self-contained content like a blog post?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "<section>"
+                },
+                {
+                    "id": "B",
+                    "text": "<article>"
+                },
+                {
+                    "id": "C",
+                    "text": "<div>"
+                },
+                {
+                    "id": "D",
+                    "text": "<main>"
+                }
+            ],
+            "correctAnswer": "<article>",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 1
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which input type allows users to select a date?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "type=\"calendar\""
+                },
+                {
+                    "id": "B",
+                    "text": "type=\"date\""
+                },
+                {
+                    "id": "C",
+                    "text": "type=\"time\""
+                },
+                {
+                    "id": "D",
+                    "text": "type=\"datetime\""
+                }
+            ],
+            "correctAnswer": "type=\"date\"",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 2
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which tag is used to embed audio in HTML5?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "<music>"
+                },
+                {
+                    "id": "B",
+                    "text": "<audio>"
+                },
+                {
+                    "id": "C",
+                    "text": "<sound>"
+                },
+                {
+                    "id": "D",
+                    "text": "<media>"
+                }
+            ],
+            "correctAnswer": "<audio>",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 3
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which attribute is mandatory for the <img> tag to specify the image location?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "alt"
+                },
+                {
+                    "id": "B",
+                    "text": "href"
+                },
+                {
+                    "id": "C",
+                    "text": "src"
+                },
+                {
+                    "id": "D",
+                    "text": "path"
+                }
+            ],
+            "correctAnswer": "src",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 4
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which HTML element is used for navigation links?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "<navigate>"
+                },
+                {
+                    "id": "B",
+                    "text": "<navbar>"
+                },
+                {
+                    "id": "C",
+                    "text": "<nav>"
+                },
+                {
+                    "id": "D",
+                    "text": "<menu>"
+                }
+            ],
+            "correctAnswer": "<nav>",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 5
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which selector targets all <p> elements inside a <div>?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "div > p"
+                },
+                {
+                    "id": "B",
+                    "text": "div p"
+                },
+                {
+                    "id": "C",
+                    "text": "div+p"
+                },
+                {
+                    "id": "D",
+                    "text": "div~p"
+                }
+            ],
+            "correctAnswer": "div p",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 6
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Wha will be the width of a div? width:200px;padding:20px;border:5px solid black;bos-sizing:border-box;",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "250px"
+                },
+                {
+                    "id": "B",
+                    "text": "240px"
+                },
+                {
+                    "id": "C",
+                    "text": "200px"
+                },
+                {
+                    "id": "D",
+                    "text": "230px"
+                }
+            ],
+            "correctAnswer": "200px",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 7
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which property is used to change the stacking order of positioned elements?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "layer"
+                },
+                {
+                    "id": "B",
+                    "text": "order"
+                },
+                {
+                    "id": "C",
+                    "text": "z-index"
+                },
+                {
+                    "id": "D",
+                    "text": "stack"
+                }
+            ],
+            "correctAnswer": "z-index",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 8
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which value of position places an element relative to the browser window?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "relative"
+                },
+                {
+                    "id": "B",
+                    "text": "absolute"
+                },
+                {
+                    "id": "C",
+                    "text": "fixed"
+                },
+                {
+                    "id": "D",
+                    "text": "sticky"
+                }
+            ],
+            "correctAnswer": "fixed",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 9
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which property controls spacing between lines?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "text-spacing"
+                },
+                {
+                    "id": "B",
+                    "text": "line-height"
+                },
+                {
+                    "id": "C",
+                    "text": "letter-spacing"
+                },
+                {
+                    "id": "D",
+                    "text": "font-height"
+                }
+            ],
+            "correctAnswer": "line-height",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 10
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which Flexbox property aligns items vertically in a row layout?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "justify-content"
+                },
+                {
+                    "id": "B",
+                    "text": "align-items"
+                },
+                {
+                    "id": "C",
+                    "text": "flex-wrap"
+                },
+                {
+                    "id": "D",
+                    "text": "align-content"
+                }
+            ],
+            "correctAnswer": "align-items",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 11
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which property makes an element invisible while still occupying space?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "display:none"
+                },
+                {
+                    "id": "B",
+                    "text": "visibility:hidden"
+                },
+                {
+                    "id": "C",
+                    "text": "opacity:0"
+                },
+                {
+                    "id": "D",
+                    "text": "hidden"
+                }
+            ],
+            "correctAnswer": "visibility:hidden",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 12
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which pseudo-class applies styles when the mouse is over an element?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": ":active"
+                },
+                {
+                    "id": "B",
+                    "text": ":hover"
+                },
+                {
+                    "id": "C",
+                    "text": ":focus"
+                },
+                {
+                    "id": "D",
+                    "text": ":visited"
+                }
+            ],
+            "correctAnswer": ":hover",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 13
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which CSS unit is relative to the root element's font size?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "em"
+                },
+                {
+                    "id": "B",
+                    "text": "rem"
+                },
+                {
+                    "id": "C",
+                    "text": "%"
+                },
+                {
+                    "id": "D",
+                    "text": "vw"
+                }
+            ],
+            "correctAnswer": "rem",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 14
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which property is used to make a Flexbox container?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "flex:true"
+                },
+                {
+                    "id": "B",
+                    "text": "displat:flex"
+                },
+                {
+                    "id": "C",
+                    "text": "flexbox"
+                },
+                {
+                    "id": "D",
+                    "text": "layout:flex"
+                }
+            ],
+            "correctAnswer": "displat:flex",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 15
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which is the correct declaration?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "int a=10;"
+                },
+                {
+                    "id": "B",
+                    "text": "integer a=10;"
+                },
+                {
+                    "id": "C",
+                    "text": "Int a=10;"
+                },
+                {
+                    "id": "D",
+                    "text": "number a=10;"
+                }
+            ],
+            "correctAnswer": "int a=10;",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 16
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Output? int x=5;printf(\"%d\",x++ + ++x);",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "10"
+                },
+                {
+                    "id": "B",
+                    "text": "11"
+                },
+                {
+                    "id": "C",
+                    "text": "undefined behaviour"
+                },
+                {
+                    "id": "D",
+                    "text": "12"
+                }
+            ],
+            "correctAnswer": "undefined behaviour",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 17
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which loop is best suited when the number of iterations is known?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "while"
+                },
+                {
+                    "id": "B",
+                    "text": "do-while"
+                },
+                {
+                    "id": "C",
+                    "text": "for"
+                },
+                {
+                    "id": "D",
+                    "text": "switch"
+                }
+            ],
+            "correctAnswer": "for",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 18
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Output int a =3,b=2;printf(\"%d\",a>b && b<5);",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "10"
+                },
+                {
+                    "id": "B",
+                    "text": "1"
+                },
+                {
+                    "id": "C",
+                    "text": "2"
+                },
+                {
+                    "id": "D",
+                    "text": "Error"
+                }
+            ],
+            "correctAnswer": "1",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 19
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which storage class keeps a local variable alive between function calls?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "auto"
+                },
+                {
+                    "id": "B",
+                    "text": "static"
+                },
+                {
+                    "id": "C",
+                    "text": "extern"
+                },
+                {
+                    "id": "D",
+                    "text": "register"
+                }
+            ],
+            "correctAnswer": "static",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 20
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which operator gives the address of a variable?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "*"
+                },
+                {
+                    "id": "B",
+                    "text": "&"
+                },
+                {
+                    "id": "C",
+                    "text": "%"
+                },
+                {
+                    "id": "D",
+                    "text": "#"
+                }
+            ],
+            "correctAnswer": "&",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 21
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which function compares two strings?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "compare()"
+                },
+                {
+                    "id": "B",
+                    "text": "strcmp()"
+                },
+                {
+                    "id": "C",
+                    "text": "strcompare()"
+                },
+                {
+                    "id": "D",
+                    "text": "equals()"
+                }
+            ],
+            "correctAnswer": "strcmp()",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 22
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Output printf(\"%d\",sizeof(char));",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "1"
+                },
+                {
+                    "id": "B",
+                    "text": "2"
+                },
+                {
+                    "id": "C",
+                    "text": "compiler dependent"
+                }
+            ],
+            "correctAnswer": "2",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 23
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which function reads an entire line including spaces?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "scanf()"
+                },
+                {
+                    "id": "B",
+                    "text": "gets()(deprecated)"
+                },
+                {
+                    "id": "C",
+                    "text": "fgets()"
+                },
+                {
+                    "id": "D",
+                    "text": "getline()"
+                }
+            ],
+            "correctAnswer": "fgets()",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 24
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "What is the index of the first element of an array?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "1"
+                },
+                {
+                    "id": "B",
+                    "text": "-1"
+                },
+                {
+                    "id": "C",
+                    "text": "Depends"
+                }
+            ],
+            "correctAnswer": "-1",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 25
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which keyword exits a function immediately?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "break"
+                },
+                {
+                    "id": "B",
+                    "text": "continue"
+                },
+                {
+                    "id": "C",
+                    "text": "return"
+                },
+                {
+                    "id": "D",
+                    "text": "exit"
+                }
+            ],
+            "correctAnswer": "return",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 26
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Output  int a =5;printf(\"%d\", a<<1);",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "5"
+                },
+                {
+                    "id": "B",
+                    "text": "8"
+                },
+                {
+                    "id": "C",
+                    "text": "10"
+                },
+                {
+                    "id": "D",
+                    "text": "20"
+                }
+            ],
+            "correctAnswer": "10",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 27
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which header file contains strlen()?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "math.h"
+                },
+                {
+                    "id": "B",
+                    "text": "string.h"
+                },
+                {
+                    "id": "C",
+                    "text": "stdlib.h"
+                },
+                {
+                    "id": "D",
+                    "text": "stdio.h"
+                }
+            ],
+            "correctAnswer": "string.h",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 28
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which of these is NOT a valid variable name?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "marks1"
+                },
+                {
+                    "id": "B",
+                    "text": "total_marks"
+                },
+                {
+                    "id": "C",
+                    "text": "1marks"
+                },
+                {
+                    "id": "D",
+                    "text": "Marks"
+                }
+            ],
+            "correctAnswer": "1marks",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 29
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which function dynamically allocates memory?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "create()"
+                },
+                {
+                    "id": "B",
+                    "text": "malloc()"
+                },
+                {
+                    "id": "C",
+                    "text": "alloc()"
+                },
+                {
+                    "id": "D",
+                    "text": "allocate()"
+                }
+            ],
+            "correctAnswer": "malloc()",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 30
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which SQL command retrieves unique values?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "UNIQUE"
+                },
+                {
+                    "id": "B",
+                    "text": "DISTINCT"
+                },
+                {
+                    "id": "C",
+                    "text": "DIFFERENT"
+                },
+                {
+                    "id": "D",
+                    "text": "FILTER"
+                }
+            ],
+            "correctAnswer": "DISTINCT",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 31
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which clause is executed after GROUP BY?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "WHERE"
+                },
+                {
+                    "id": "B",
+                    "text": "HAVING"
+                },
+                {
+                    "id": "C",
+                    "text": "ORDER BY"
+                },
+                {
+                    "id": "D",
+                    "text": "LIMIT"
+                }
+            ],
+            "correctAnswer": "HAVING",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 32
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which JOIN returns all matching records from both tables?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "INNER JOIN"
+                },
+                {
+                    "id": "B",
+                    "text": "FULLOUTER JOIN"
+                },
+                {
+                    "id": "C",
+                    "text": "LEFT JOIN"
+                },
+                {
+                    "id": "D",
+                    "text": "RIGHT JOIN"
+                }
+            ],
+            "correctAnswer": "FULLOUTER JOIN",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 33
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which function returns the total number of rows?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "SUM()"
+                },
+                {
+                    "id": "B",
+                    "text": "COUNT()"
+                },
+                {
+                    "id": "C",
+                    "text": "TOTAL()"
+                },
+                {
+                    "id": "D",
+                    "text": "NUMBER()"
+                }
+            ],
+            "correctAnswer": "COUNT()",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 34
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Which SQL statement modifies existing data?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "MODIFY"
+                },
+                {
+                    "id": "B",
+                    "text": "ALTER"
+                },
+                {
+                    "id": "C",
+                    "text": "UPDATE"
+                },
+                {
+                    "id": "D",
+                    "text": "CHANGE"
+                }
+            ],
+            "correctAnswer": "UPDATE",
+            "marks": 1,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 35
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "A train 180 m long crosses a pole in 9 seconds. Its speed is:",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "18m/s"
+                },
+                {
+                    "id": "B",
+                    "text": "20m/s"
+                },
+                {
+                    "id": "C",
+                    "text": "22m/s"
+                },
+                {
+                    "id": "D",
+                    "text": "25m/s"
+                }
+            ],
+            "correctAnswer": "20m/s",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 36
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "A can complete a work in 15 days and B in 10 days. Working together, they will complete it in:",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "5 days"
+                },
+                {
+                    "id": "B",
+                    "text": "6 days"
+                },
+                {
+                    "id": "C",
+                    "text": "7 days"
+                },
+                {
+                    "id": "D",
+                    "text": "8days"
+                }
+            ],
+            "correctAnswer": "6 days",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 37
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "The average of six numbers is 25. If one number 35 is removed, the new average is:",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "21"
+                },
+                {
+                    "id": "B",
+                    "text": "22"
+                },
+                {
+                    "id": "C",
+                    "text": "23"
+                },
+                {
+                    "id": "D",
+                    "text": "24"
+                }
+            ],
+            "correctAnswer": "23",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 38
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Find the next number:2,6,12,20,20?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "40"
+                },
+                {
+                    "id": "B",
+                    "text": "42"
+                },
+                {
+                    "id": "C",
+                    "text": "44"
+                },
+                {
+                    "id": "D",
+                    "text": "46"
+                }
+            ],
+            "correctAnswer": "42",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 39
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "A father is 36 years old and his son is 12 years old. After how many years will the father be twice the son's age?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "8"
+                },
+                {
+                    "id": "B",
+                    "text": "10"
+                },
+                {
+                    "id": "C",
+                    "text": "12"
+                },
+                {
+                    "id": "D",
+                    "text": "14"
+                }
+            ],
+            "correctAnswer": "12",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 40
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "If 25% of a number is 60, the number is:",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "180"
+                },
+                {
+                    "id": "B",
+                    "text": "200"
+                },
+                {
+                    "id": "C",
+                    "text": "240"
+                },
+                {
+                    "id": "D",
+                    "text": "260"
+                }
+            ],
+            "correctAnswer": "240",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 41
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "In a coding contest, 120 students participated. 70 students solved Problem A. 50 students solved Problem B. 20 students solved both Problem A and Problem B. How many students solved only Problem A?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "40 students"
+                },
+                {
+                    "id": "B",
+                    "text": "50 students"
+                },
+                {
+                    "id": "C",
+                    "text": "70 students"
+                },
+                {
+                    "id": "D",
+                    "text": "90 students"
+                }
+            ],
+            "correctAnswer": "50 students",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 42
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "A clock shows 2:20. The angle between the hour and minute hands is:",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "40°"
+                },
+                {
+                    "id": "B",
+                    "text": "50°"
+                },
+                {
+                    "id": "C",
+                    "text": "60°"
+                },
+                {
+                    "id": "D",
+                    "text": "70°"
+                }
+            ],
+            "correctAnswer": "60°",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 43
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "If today is Monday, what day will it be after 100 days?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "Wednesday"
+                },
+                {
+                    "id": "B",
+                    "text": "Thursday"
+                },
+                {
+                    "id": "C",
+                    "text": "Friday"
+                },
+                {
+                    "id": "D",
+                    "text": "Saturday"
+                }
+            ],
+            "correctAnswer": "Friday",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 44
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Find the odd one out. 8,27,64,100,125",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "8"
+                },
+                {
+                    "id": "B",
+                    "text": "27"
+                },
+                {
+                    "id": "C",
+                    "text": "64"
+                },
+                {
+                    "id": "D",
+                    "text": "100"
+                }
+            ],
+            "correctAnswer": "100",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 45
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Choose the missing term. AZ,BY,CX?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "DW"
+                },
+                {
+                    "id": "B",
+                    "text": "DX"
+                },
+                {
+                    "id": "C",
+                    "text": "DV"
+                },
+                {
+                    "id": "D",
+                    "text": "DY"
+                }
+            ],
+            "correctAnswer": "DW",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 46
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "If CAT=24,THEN DOG=?(A=1,B=2..)",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "25"
+                },
+                {
+                    "id": "B",
+                    "text": "26"
+                },
+                {
+                    "id": "C",
+                    "text": "27"
+                },
+                {
+                    "id": "D",
+                    "text": "28"
+                }
+            ],
+            "correctAnswer": "26",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 47
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "A person walks 5 km North, then 12 km East. What is the shortest distance from the starting point?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "12km"
+                },
+                {
+                    "id": "B",
+                    "text": "13km"
+                },
+                {
+                    "id": "C",
+                    "text": "15 km"
+                },
+                {
+                    "id": "D",
+                    "text": "17Km"
+                }
+            ],
+            "correctAnswer": "13km",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 48
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "The ratio of boys to girls is 7:5. If there are 84 boys, how many girls are there?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "55"
+                },
+                {
+                    "id": "B",
+                    "text": "60"
+                },
+                {
+                    "id": "C",
+                    "text": "65"
+                },
+                {
+                    "id": "D",
+                    "text": "70"
+                }
+            ],
+            "correctAnswer": "60",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 49
+        },
+        {
+            "exam": "6a60846e06ba2683731f1f8c",
+            "section": "6a60846e06ba2683731f1f8d",
+            "type": "Single Correct",
+            "questionText": "Three statements are given: All programmers are problem solvers. Some students are programmers. Which conclusion is definitely true?",
+            "options": [
+                {
+                    "id": "A",
+                    "text": "All the students are problem solvers"
+                },
+                {
+                    "id": "B",
+                    "text": "Some students are problem solvers"
+                },
+                {
+                    "id": "C",
+                    "text": "No student is a programmer"
+                },
+                {
+                    "id": "D",
+                    "text": "All problem solvers are programmers"
+                }
+            ],
+            "correctAnswer": "Some students are problem solvers",
+            "marks": 2,
+            "explanation": "",
+            "difficulty": "Medium",
+            "order": 50
+        }
+    ]
+}

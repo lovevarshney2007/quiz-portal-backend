@@ -120,12 +120,17 @@ class QuestionService {
         const validTypes = ['Single Correct', 'Multiple Correct', 'True/False', 'Integer', 'Numerical'];
         const validDifficulties = ['Easy', 'Medium', 'Hard'];
 
-        rows.forEach((row, index) => {
+        rows.forEach((rawRow, index) => {
+            const row = {};
+            Object.keys(rawRow).forEach(key => {
+                row[key.trim()] = rawRow[key];
+            });
+
             const rowNumber = index + 2; // +1 for 0-index, +1 for header row
-            const qText = row['Question Text'] ? String(row['Question Text']).trim() : '';
+            const qText = (row['Question Text'] || row['Question']) ? String(row['Question Text'] || row['Question']).trim() : '';
             
             if (!qText) {
-                errors.push(`Row ${rowNumber}: Question Text is required`);
+                errors.push(`Row ${rowNumber}: Question is required`);
                 return;
             }
 
@@ -158,9 +163,16 @@ class QuestionService {
             let correctAns = row['Correct Answer'] ? String(row['Correct Answer']).trim() : null;
 
             if (qType === 'Single Correct' || qType === 'Multiple Correct') {
-                for (let i = 1; i <= 4; i++) {
-                    if (row[`Option ${i}`]) {
-                        options.push({ text: String(row[`Option ${i}`]).trim() });
+                const optionKeys = ['Option A', 'Option B', 'Option C', 'Option D', 'Option 1', 'Option 2', 'Option 3', 'Option 4'];
+                // We map 'A' -> option 1, 'B' -> option 2, etc. if needed, but let's just collect the ones that exist.
+                // Assuming it's exactly 4 options.
+                const possibleKeys = [['Option A', 'Option 1'], ['Option B', 'Option 2'], ['Option C', 'Option 3'], ['Option D', 'Option 4']];
+                
+                const optionIds = ['A', 'B', 'C', 'D'];
+                for (let i = 0; i < 4; i++) {
+                    const val = row[possibleKeys[i][0]] || row[possibleKeys[i][1]];
+                    if (val) {
+                        options.push({ id: optionIds[options.length], text: String(val).trim() });
                     }
                 }
                 
@@ -173,17 +185,38 @@ class QuestionService {
                     errors.push(`Row ${rowNumber}: Correct Answer is required`);
                     return;
                 }
+
+                const optionMap = {
+                    'A': 0, '1': 0,
+                    'B': 1, '2': 1,
+                    'C': 2, '3': 2,
+                    'D': 3, '4': 3
+                };
+
+                const mapAnswerToText = (ans) => {
+                    const upperAns = ans.toUpperCase();
+                    if (optionMap[upperAns] !== undefined && options[optionMap[upperAns]]) {
+                        return options[optionMap[upperAns]].text;
+                    }
+                    return ans; // fallback to the text itself if they provided the full text
+                };
                 
                 // For Multiple Correct, correctAnswer might be comma-separated
                 if (qType === 'Multiple Correct') {
-                    correctAns = correctAns.split(',').map(s => s.trim());
+                    correctAns = correctAns.split(',').map(s => mapAnswerToText(s.trim()));
                     const allOptionsText = options.map(o => o.text);
                     const missingOption = correctAns.find(ans => !allOptionsText.includes(ans));
                     if (missingOption) {
                         errors.push(`Row ${rowNumber}: Correct answer '${missingOption}' does not match any provided option`);
                         return;
                     }
+                    // The DB probably expects an array or comma-separated string depending on the model,
+                    // Assuming string for now based on what was there, or array. Wait, previous code didn't join it back.
+                    // If the schema expects a string, maybe it should be joined. The old code left it as an array if it was multiple correct, wait! 
+                    // No, the old code actually left it as an array? Let's check `questions.push` at the end... it just passes `correctAns`. 
+                    // Let's keep it as is (array).
                 } else {
+                    correctAns = mapAnswerToText(correctAns);
                     const allOptionsText = options.map(o => o.text);
                     if (!allOptionsText.includes(correctAns)) {
                         errors.push(`Row ${rowNumber}: Correct answer '${correctAns}' does not match any provided option`);
@@ -191,7 +224,7 @@ class QuestionService {
                     }
                 }
             } else if (qType === 'True/False') {
-                options.push({ text: 'True' }, { text: 'False' });
+                options.push({ id: 'A', text: 'True' }, { id: 'B', text: 'False' });
                 if (correctAns !== 'True' && correctAns !== 'False') {
                     errors.push(`Row ${rowNumber}: True/False questions must have correct answer as 'True' or 'False'`);
                     return;

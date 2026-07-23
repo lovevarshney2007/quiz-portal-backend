@@ -1,6 +1,7 @@
 const questionService = require('../services/question.service');
 const { catchAsync } = require('../middlewares/error.middleware');
 const CustomError = require('../utils/customError');
+const fs = require('fs');
 
 const createQuestion = catchAsync(async (req, res) => {
     const question = await questionService.createQuestion(req.body);
@@ -56,8 +57,16 @@ const importPreview = catchAsync(async (req, res) => {
         throw new CustomError('examId and sectionId are required', 400);
     }
 
-    const result = await questionService.parseBulkImportFile(req.file.buffer, examId, sectionId);
+    const fileBuffer = req.file.buffer || fs.readFileSync(req.file.path);
+    const result = await questionService.parseBulkImportFile(fileBuffer, examId, sectionId);
     
+    // Optional: Clean up the file from disk after reading it since we don't need it permanently
+    if (req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+            if (err) console.error('Failed to delete temp file', err);
+        });
+    }
+
     if (!result.success) {
         return res.status(400).json({ status: 'fail', errors: result.errors });
     }
