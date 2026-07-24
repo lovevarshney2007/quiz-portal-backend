@@ -152,15 +152,94 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
 }
 ```
 
+#### Get All Exams
+- **Method**: `GET`
+- **URL**: `/api/v1/exams`
+- **Use Case**: Fetches a paginated list of exams. Students only see published/started exams. Admins see all exams.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "exams": [
+      {
+        "_id": "60d0fe4f5311236168a109cb",
+        "title": "Data Structures & Algorithms - Mid Term",
+        "status": "Published"
+      }
+    ]
+  }
+}
+```
+
+#### Get Exam Details By ID
+- **Method**: `GET`
+- **URL**: `/api/v1/exams/:id`
+- **Use Case**: Fetches the exam configuration including duration, passing marks, and sections metadata. **Note: This does not return the actual questions.**
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "exam": {
+      "_id": "60d0fe4f5311236168a109cb",
+      "title": "Data Structures & Algorithms - Mid Term",
+      "duration": 90,
+      "sections": [
+        {
+          "title": "Trees",
+          "order": 1,
+          "marks": 50,
+          "_id": "60d0fe4f5311236168a109cc"
+        }
+      ]
+    }
+  }
+}
+```
+
 #### Publish / Start / Complete Exam
 - **Method**: `PATCH`
 - **URL**: `/api/v1/exams/:id/publish`
 - **URL**: `/api/v1/exams/:id/start` (Initializes tracking in Redis)
 - **URL**: `/api/v1/exams/:id/complete` (Fires BullMQ worker to generate results)
+- **URL**: `/api/v1/exams/:id/pause` (Pauses an ongoing exam)
+- **URL**: `/api/v1/exams/:id/resume` (Resumes a paused exam)
 
 ---
 
-### 3. Question Import (Admin Only)
+### 3. Question Management & Import (Admin Only)
+
+#### Get Questions by Exam ID
+- **Method**: `GET`
+- **URL**: `/api/v1/questions/exam/:examId`
+- **Use Case**: Fetches all questions associated with a specific exam. **This should be called after fetching the exam details to load the actual quiz content.** Each question indicates which section it belongs to.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "questions": [
+      {
+        "_id": "6a5fc5d870bb2564538a11a0",
+        "exam": "60d0fe4f5311236168a109cb",
+        "section": "60d0fe4f5311236168a109cc",
+        "type": "Single Correct",
+        "questionText": "What is the time complexity of searching in a BST?",
+        "options": [
+          { "id": "A", "text": "O(1)" },
+          { "id": "B", "text": "O(n)" },
+          { "id": "C", "text": "O(log n)" },
+          { "id": "D", "text": "O(n log n)" }
+        ],
+        "marks": 4
+      }
+    ]
+  }
+}
+```
+
+#### Bulk Import Questions
 
 **Architecture Note:** This backend uses a **2-Step "Review and Confirm" Flow** for bulk importing questions. 
 1. The frontend uploads the Excel file to `/import-preview`.
