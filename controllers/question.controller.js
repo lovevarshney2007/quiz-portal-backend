@@ -53,8 +53,8 @@ const importPreview = catchAsync(async (req, res) => {
         throw new CustomError('Please upload an excel or csv file', 400);
     }
     const { examId, sectionId } = req.body;
-    if (!examId || !sectionId) {
-        throw new CustomError('examId and sectionId are required', 400);
+    if (!examId) {
+        throw new CustomError('examId is required', 400);
     }
 
     const fileBuffer = req.file.buffer || fs.readFileSync(req.file.path);

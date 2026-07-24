@@ -2,6 +2,7 @@ const questionRepository = require('../repositories/question.repository');
 const examRepository = require('../repositories/exam.repository');
 const CustomError = require('../utils/customError');
 const xlsx = require('xlsx');
+const mongoose = require('mongoose');
 
 class QuestionService {
     async createQuestion(questionData) {
@@ -102,6 +103,9 @@ class QuestionService {
     }
 
     async parseBulkImportFile(buffer, examId, sectionId) {
+        const exam = await examRepository.findById(examId);
+        if (!exam) return { success: false, errors: ['Exam not found'] };
+
         const workbook = xlsx.read(buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
@@ -109,13 +113,19 @@ class QuestionService {
         const errors = [];
         const questions = [];
         const seenTexts = new Set();
+        let examModified = false;
         
         // Get existing questions to check for duplicates and find max order
         const existingQuestions = await questionRepository.findByExamId(examId);
         existingQuestions.forEach(q => seenTexts.add(q.questionText.trim().toLowerCase()));
         
-        const sectionQuestions = existingQuestions.filter(q => q.section.toString() === sectionId.toString());
-        let currentOrder = sectionQuestions.length > 0 ? Math.max(...sectionQuestions.map(q => q.order)) : 0;
+        const maxOrders = {};
+        existingQuestions.forEach(q => {
+            const sid = q.section.toString();
+            if (maxOrders[sid] === undefined || q.order > maxOrders[sid]) {
+                maxOrders[sid] = q.order;
+            }
+        });
 
         const validTypes = ['Single Correct', 'Multiple Correct', 'True/False', 'Integer', 'Numerical'];
         const validDifficulties = ['Easy', 'Medium', 'Hard'];
@@ -127,6 +137,30 @@ class QuestionService {
             });
 
             const rowNumber = index + 2; // +1 for 0-index, +1 for header row
+
+            const sectionTitle = row['Section'] ? String(row['Section']).trim() : null;
+            let currentSectionId = sectionId;
+
+            if (sectionTitle) {
+                let matchedSection = exam.sections.find(s => s.title.toLowerCase() === sectionTitle.toLowerCase());
+                if (!matchedSection) {
+                    matchedSection = {
+                        _id: new mongoose.Types.ObjectId(),
+                        title: sectionTitle,
+                        order: exam.sections.length + 1,
+                        marks: 0
+                    };
+                    exam.sections.push(matchedSection);
+                    examModified = true;
+                }
+                currentSectionId = matchedSection._id;
+            }
+
+            if (!currentSectionId) {
+                errors.push(`Row ${rowNumber}: No section provided in file and no default section specified`);
+                return;
+            }
+
             const qText = (row['Question Text'] || row['Question']) ? String(row['Question Text'] || row['Question']).trim() : '';
             
             if (!qText) {
@@ -234,11 +268,15 @@ class QuestionService {
                  return;
             }
 
-            currentOrder++;
+            const sid = currentSectionId.toString();
+            if (maxOrders[sid] === undefined) {
+                maxOrders[sid] = 0;
+            }
+            maxOrders[sid]++;
             
             questions.push({
                 exam: examId,
-                section: sectionId,
+                section: currentSectionId,
                 type: qType,
                 questionText: qText,
                 options,
@@ -246,12 +284,16 @@ class QuestionService {
                 marks,
                 explanation: row['Explanation'] || '',
                 difficulty,
-                order: currentOrder
+                order: maxOrders[sid]
             });
         });
         
         if (errors.length > 0) {
             return { success: false, errors };
+        }
+        
+        if (examModified) {
+            await exam.save();
         }
         
         return { success: true, preview: questions };
