@@ -108,6 +108,56 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
 
 ---
 
+
+#### Logout
+- **Method**: `POST`
+- **URL**: `/api/v1/auth/logout`
+- **Headers**: Authorization `Bearer <accessToken>`
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "message": "Logged out successfully"
+}
+```
+
+### 1.5. Dashboard APIs
+
+*Require Authorization header: `Bearer <accessToken>`*
+
+#### Admin Dashboard
+- **Method**: `GET`
+- **URL**: `/api/v1/dashboard/admin`
+- **Use Case**: Fetches summary statistics for the admin dashboard.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "totalStudents": 1500,
+    "totalExams": 12,
+    "activeExams": 2
+  }
+}
+```
+
+#### Student Dashboard
+- **Method**: `GET`
+- **URL**: `/api/v1/dashboard/student`
+- **Use Case**: Fetches summary statistics for the student dashboard.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "upcomingExams": 2,
+    "completedExams": 5
+  }
+}
+```
+
+---
+
 ### 2. Exam Management (Admin Only)
 
 *Require Authorization header: `Bearer <accessToken>`*
@@ -206,6 +256,98 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
 - **URL**: `/api/v1/exams/:id/pause` (Pauses an ongoing exam)
 - **URL**: `/api/v1/exams/:id/resume` (Resumes a paused exam)
 
+#### Update Exam
+- **Method**: `PATCH`
+- **URL**: `/api/v1/exams/:id`
+- **Request Body**: (Same fields as Create Exam, all optional)
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "exam": {
+      "title": "Updated Title",
+      "status": "Draft"
+    }
+  }
+}
+```
+
+#### Delete Exam
+- **Method**: `DELETE`
+- **URL**: `/api/v1/exams/:id`
+- **Response**: `204 No Content`
+*(No JSON body returned)*
+
+#### Extend Exam
+- **Method**: `PATCH`
+- **URL**: `/api/v1/exams/:id/extend`
+- **Request Body**:
+```json
+{
+  "extraMinutes": 15
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "exam": {
+      "endTime": "2026-08-01T11:45:00Z",
+      "duration": 105
+    }
+  }
+}
+```
+
+#### Archive Exam
+- **Method**: `PATCH`
+- **URL**: `/api/v1/exams/:id/archive`
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "exam": {
+      "status": "Archived"
+    }
+  }
+}
+```
+
+#### Duplicate Exam
+- **Method**: `POST`
+- **URL**: `/api/v1/exams/:id/duplicate`
+- **Response**: `201 Created`
+```json
+{
+  "status": "success",
+  "data": {
+    "exam": {
+      "title": "Data Structures & Algorithms - Mid Term (Copy)",
+      "status": "Draft"
+    }
+  }
+}
+```
+
+#### Force Submit Exam (For a specific student)
+- **Method**: `POST`
+- **URL**: `/api/v1/exams/:id/force-submit/:studentId`
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "attempt": {
+      "status": "Submitted"
+    }
+  }
+}
+```
+
+
 ---
 
 ### 3. Question Management & Import (Admin Only)
@@ -236,6 +378,147 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
       }
     ]
   }
+}
+```
+
+
+#### Get Single Question
+- **Method**: `GET`
+- **URL**: `/api/v1/questions/:id`
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "question": {
+      "_id": "6a5fc5d870bb2564538a11a0",
+      "questionText": "What is the capital of France?",
+      "options": [{"text": "Paris"}, {"text": "London"}],
+      "correctAnswer": "Paris",
+      "marks": 4
+    }
+  }
+}
+```
+
+#### Create Question
+- **Method**: `POST`
+- **URL**: `/api/v1/questions`
+- **Request Body**:
+```json
+{
+  "exam": "60d0fe4f5311236168a109cb",
+  "section": "60d0fe4f5311236168a109cc",
+  "type": "Single Correct",
+  "questionText": "What is the capital of France?",
+  "options": [
+    { "text": "Paris" },
+    { "text": "London" }
+  ],
+  "correctAnswer": "Paris",
+  "marks": 4,
+  "negativeMarks": 1,
+  "difficulty": "Easy",
+  "order": 1
+}
+```
+- **Response**: `201 Created`
+
+#### Update Question
+- **Method**: `PATCH`
+- **URL**: `/api/v1/questions/:id`
+- **Request Body**: (Same fields as Create Question, all optional)
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "question": {
+      "_id": "6a5fc5d870bb2564538a11a0",
+      "questionText": "Updated Text"
+    }
+  }
+}
+```
+
+#### Delete Question
+- **Method**: `DELETE`
+- **URL**: `/api/v1/questions/:id`
+- **Response**: `204 No Content`
+*(No JSON body returned)*
+
+#### Duplicate Question
+- **Method**: `POST`
+- **URL**: `/api/v1/questions/duplicate/:id`
+- **Response**: `201 Created`
+```json
+{
+  "status": "success",
+  "data": {
+    "question": {
+      "_id": "new_question_id",
+      "questionText": "What is the capital of France? (Copy)"
+    }
+  }
+}
+```
+
+#### Move Question to Another Section
+- **Method**: `PATCH`
+- **URL**: `/api/v1/questions/move/:id`
+- **Request Body**:
+```json
+{
+  "sectionId": "new_section_id_here"
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "question": {
+      "_id": "6a5fc5d870bb2564538a11a0",
+      "section": "new_section_id_here"
+    }
+  }
+}
+```
+
+#### Reorder Questions
+- **Method**: `PATCH`
+- **URL**: `/api/v1/questions/reorder/batch`
+- **Request Body**:
+```json
+{
+  "updates": [
+    { "id": "question_id_1", "order": 1 },
+    { "id": "question_id_2", "order": 2 }
+  ]
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "message": "Questions reordered successfully"
+}
+```
+
+#### Bulk Delete Questions
+- **Method**: `DELETE`
+- **URL**: `/api/v1/questions/bulk/batch`
+- **Request Body**:
+```json
+{
+  "ids": ["question_id_1", "question_id_2"]
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "message": "2 questions deleted successfully"
 }
 ```
 
@@ -324,6 +607,41 @@ Saves responses directly into Redis caching. Handled via intervals on the fronte
 ```
 - **Response**: `200 OK`
 
+
+#### Get Attempt State
+- **Method**: `GET`
+- **URL**: `/api/v1/attempts/state/:examId`
+- **Use Case**: Fetches the auto-saved state of an ongoing exam for the student. Useful for restoring session after refresh.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "responses": {
+      "question_id_1": { "givenAnswer": ["A"], "status": "Answered" }
+    },
+    "violationCount": 0
+  }
+}
+```
+
+#### Get Attempt Summary
+- **Method**: `GET`
+- **URL**: `/api/v1/attempts/summary/:examId`
+- **Use Case**: Fetches the summary (how many answered, visited, marked for review) for the exam attempt.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "answered": 10,
+    "notAnswered": 5,
+    "markedForReview": 2,
+    "notVisited": 3
+  }
+}
+```
+
 #### Submit Exam
 - **Method**: `POST`
 - **URL**: `/api/v1/attempts/submit`
@@ -336,6 +654,110 @@ Saves responses directly into Redis caching. Handled via intervals on the fronte
 - **Response**: `200 OK`
 
 ---
+
+
+---
+
+### 5. Results & Leaderboard
+
+*Require Authorization header: `Bearer <accessToken>`*
+
+#### Generate Results (Admin Only)
+- **Method**: `POST`
+- **URL**: `/api/v1/results/generate`
+- **Request Body**:
+```json
+{
+  "examId": "6a5fc5d770bb2564538a119d"
+}
+```
+- **Use Case**: Pushes a job to the BullMQ queue to calculate results for all students who attempted the exam.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "message": "Result generation job added to queue"
+}
+```
+
+#### Get Exam Results (Admin/Student)
+- **Method**: `GET`
+- **URL**: `/api/v1/results/exam/:examId`
+- **Use Case**: Fetches the calculated results. Students see only their own result; admins see all results for the exam.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "results": [
+      {
+        "student": "student_id",
+        "score": 45,
+        "totalMarks": 50
+      }
+    ]
+  }
+}
+```
+
+#### Get Leaderboard
+- **Method**: `GET`
+- **URL**: `/api/v1/leaderboard/:examId`
+- **Use Case**: Fetches the top ranking students for a given exam.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "leaderboard": [
+      {
+        "student": { "name": "Love Varshney" },
+        "score": 50,
+        "rank": 1
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 6. Violations (Proctoring)
+
+#### Report Violation (Student)
+- **Method**: `POST`
+- **URL**: `/api/v1/violations`
+- **Request Body**:
+```json
+{
+  "examId": "6a5fc5d770bb2564538a119d",
+  "type": "TabSwitch",
+  "browser": "Chrome",
+  "device": "Desktop"
+}
+```
+- **Use Case**: Sent by the frontend when a proctoring violation occurs (e.g., TabSwitch, FullscreenExit).
+- **Response**: `201 Created`
+
+#### Get Exam Violations (Admin Only)
+- **Method**: `GET`
+- **URL**: `/api/v1/violations/:examId`
+- **Use Case**: Fetches all violations recorded for a specific exam to review student integrity.
+- **Response**: `200 OK`
+```json
+{
+  "status": "success",
+  "data": {
+    "violations": [
+      {
+        "student": "student_id",
+        "type": "TabSwitch",
+        "timestamp": "2026-08-01T10:15:00Z"
+      }
+    ]
+  }
+}
+```
 
 ## 🛠 Real-Time Tracking (WebSockets)
 Socket.IO runs on the same port (`5000`).
