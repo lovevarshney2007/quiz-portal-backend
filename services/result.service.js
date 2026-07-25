@@ -50,10 +50,14 @@ class ResultService {
 
             let isCorrect = false;
 
-            if (status.status === 'NotVisited' || status.status === 'Visited' || status.status === 'MarkedForReview' || status.status === 'Skipped') {
-                skippedQuestions++;
-                sec.skipped++;
-            } else if (status.status === 'Answered' || status.status === 'AnsweredMarkedForReview') {
+            const hasGivenAnswer = status.givenAnswer && (
+                Array.isArray(status.givenAnswer)
+                    ? status.givenAnswer.length > 0 && status.givenAnswer.some(a => String(a).trim() !== '')
+                    : String(status.givenAnswer).trim() !== ''
+            );
+            const isAnswered = status.status === 'Answered' || status.status === 'AnsweredMarkedForReview' || hasGivenAnswer;
+
+            if (isAnswered) {
                 isCorrect = this.checkAnswer(question, status.givenAnswer);
                 if (isCorrect) {
                     correctAnswers++;
@@ -67,6 +71,9 @@ class ResultService {
                     sec.wrong++;
                     sec.score -= negativeMark;
                 }
+            } else {
+                skippedQuestions++;
+                sec.skipped++;
             }
             
             responses.push({

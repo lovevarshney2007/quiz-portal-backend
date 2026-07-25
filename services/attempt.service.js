@@ -139,8 +139,24 @@ class AttemptService {
                 state.questions[qId] = { timeSpent: 0, visitedCount: 0 };
             }
             
-            if (payload.status) state.questions[qId].status = payload.status;
             if (payload.givenAnswer !== undefined) state.questions[qId].givenAnswer = payload.givenAnswer;
+            
+            const hasAnswer = state.questions[qId].givenAnswer && (
+                Array.isArray(state.questions[qId].givenAnswer) 
+                    ? state.questions[qId].givenAnswer.length > 0 && state.questions[qId].givenAnswer.some(a => String(a).trim() !== '')
+                    : String(state.questions[qId].givenAnswer).trim() !== ''
+            );
+
+            if (payload.status) {
+                state.questions[qId].status = payload.status;
+            } else if (hasAnswer) {
+                state.questions[qId].status = 'Answered';
+            }
+
+            if (hasAnswer && (state.questions[qId].status === 'Visited' || state.questions[qId].status === 'NotVisited')) {
+                state.questions[qId].status = 'Answered';
+            }
+
             if (payload.timeSpent) state.questions[qId].timeSpent += payload.timeSpent;
             state.questions[qId].visitedCount += 1;
 
