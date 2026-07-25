@@ -10,7 +10,10 @@ class AttemptService {
         }
 
         const now = new Date();
-        if (now < exam.startTime || now > exam.endTime) {
+        if (exam.status !== 'Started' && exam.status !== 'Published') {
+            throw new CustomError('Exam is not currently active', 403);
+        }
+        if (exam.status === 'Published' && (now < exam.startTime || now > exam.endTime)) {
             throw new CustomError('Exam is not currently active', 403);
         }
 

@@ -773,3 +773,83 @@ Connect to `http://localhost:5000` from the frontend using the `socket.io-client
 - `exam_completed`: `{ "examId": "..." }`
 - `exam_extended`: `{ "examId": "...", "extraMinutes": 10, "newEndTime": "..." }`
 - `force_submit`: `{ "studentId": "..." }`
+
+---
+
+## 🔍 Troubleshooting: Why Questions Are Not Fetching / Student Screen Stuck on "Loading..."
+
+If the student screen gets stuck showing **"Loading Question..."** or 0 questions are fetched, check the following 6 common root causes and fixes:
+
+### 1. 🚨 Backend Route Permission Error (HTTP 403 Forbidden) — **[MOST COMMON]**
+* **Symptom**: Student logs in, starts exam, but screen shows *"Loading Question..."*. Browser console shows `403 Forbidden` for `GET /api/v1/questions/exam/:examId`.
+* **Root Cause**: `GET /api/v1/questions/exam/:examId` in `routes/question.routes.js` was placed below `router.use(authorize(ROLES.ADMIN))`. Since students have role `Student`, backend blocks the request.
+* **Fix**: In `routes/question.routes.js`, move `router.get('/exam/:examId')` **above** `router.use(authorize(ROLES.ADMIN))`:
+  ```js
+  router.use(protect);
+  
+  // Allowed for all authenticated users (Students & Admins)
+  router.get('/exam/:examId', questionController.getExamQuestions);
+  router.get('/:id', questionController.getQuestion);
+  
+  // Admin only routes below
+  router.use(authorize(ROLES.ADMIN));
+  ```
+
+---
+
+### 2. ⏰ Inactive Exam Status or Time Schedule Mismatch
+* **Symptom**: Frontend shows *"Exam is not currently active"* or questions array remains empty.
+* **Root Cause**: `startAttempt` (`POST /api/v1/attempts/start`) checks if current time is between `exam.startTime` and `exam.endTime`. If exam status is `Draft` or time window has passed/not started, the session cannot start.
+* **Fix**: Update exam status to `Started` or `Published` and ensure `startTime` and `endTime` cover current time:
+  ```bash
+  # Start the exam via admin endpoint
+  PATCH /api/v1/exams/:id/start
+  ```
+
+---
+
+### 3. 🗄 Database Seeding / Missing Question Foreign Keys
+* **Symptom**: `GET /api/v1/questions/exam/:examId` returns `200 OK` with `{ questions: [] }`.
+* **Root Cause**: Questions in MongoDB do not have the `exam` field pointing to the correct `Exam` `_id`, or database hasn't been seeded.
+* **Fix**: Ensure question documents have `"exam": "<EXAM_OBJECT_ID>"` and `"section": "<SECTION_OBJECT_ID>"`. Run seed script if needed:
+  ```bash
+  npm run seed:backend
+  ```
+
+---
+
+### 4. 🌐 CORS or Incorrect `API_BASE_URL` Mismatch
+* **Symptom**: Frontend console shows `NetworkError` or CORS blocked error.
+* **Root Cause**: 
+  - Frontend `VITE_API_BASE_URL` in `.env` points to wrong URL or port.
+  - Backend `app.js` `allowedOrigins` array does not include the frontend origin (e.g. `http://localhost:5173` or Vercel URL).
+* **Fix**: Check `app.js` in backend:
+  ```js
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://your-deployed-frontend.vercel.app'
+  ];
+  ```
+
+---
+
+### 5. 🔑 Token Expiration / Missing Authorization Header (HTTP 401)
+* **Symptom**: API calls return `401 Unauthorized` or redirect to login.
+* **Root Cause**: Candidate `gdg_token` in cookies/localStorage is missing or expired.
+* **Fix**: Ensure student logs in properly via `/auth/login` to obtain an `accessToken` and that requests send `Authorization: Bearer <accessToken>`.
+
+---
+
+### 6. ⚛️ Frontend Property Mapping Compatibility
+* **Symptom**: `activeQ.options.map is not a function` error in React console.
+* **Root Cause**: Backend returns `options` as an array `[{ id: "A", text: "..." }]` or object `{ a: "..." }`, but frontend component expects array.
+* **Fix**: Safely handle both array and object formats in `QuestionArea.jsx`:
+  ```js
+  const rawOptions = activeQ.options || {};
+  const options = Array.isArray(rawOptions)
+    ? rawOptions
+    : Object.entries(rawOptions).map(([id, text]) => ({ id, text }));
+  ```
+
