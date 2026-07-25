@@ -14,6 +14,10 @@ class AttemptRepository {
         return await ExamAttempt.findById(attemptId);
     }
 
+    async findAttemptsByExamId(examId) {
+        return await ExamAttempt.find({ examId });
+    }
+
     async updateAttempt(attemptId, updateData) {
         return await ExamAttempt.findByIdAndUpdate(attemptId, updateData, { new: true });
     }
@@ -28,6 +32,15 @@ class AttemptRepository {
             statusData,
             { new: true, upsert: true } // Create if doesn't exist
         );
+    }
+
+    async deleteAttemptByUserAndExam(userId, examId) {
+        const attempt = await ExamAttempt.findOne({ userId, examId });
+        if (attempt) {
+            await QuestionStatus.deleteMany({ attemptId: attempt._id });
+            await ExamAttempt.deleteOne({ _id: attempt._id });
+        }
+        return true;
     }
 }
 

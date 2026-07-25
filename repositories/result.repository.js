@@ -1,8 +1,18 @@
 const Result = require('../models/Result');
+require('../models/User');
+require('../models/Exam');
 
 class ResultRepository {
     async create(resultData) {
         return await Result.create(resultData);
+    }
+
+    async createOrUpdate(resultData) {
+        return await Result.findOneAndUpdate(
+            { student: resultData.student, exam: resultData.exam },
+            resultData,
+            { new: true, upsert: true }
+        );
     }
 
     async findByAttemptId(attemptId) {

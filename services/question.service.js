@@ -221,39 +221,43 @@ class QuestionService {
                 }
 
                 const optionMap = {
-                    'A': 0, '1': 0,
-                    'B': 1, '2': 1,
-                    'C': 2, '3': 2,
-                    'D': 3, '4': 3
+                    'A': 0, '1': 0, 'OPTION A': 0, 'OPTION 1': 0, 'OPT A': 0, 'OPT 1': 0,
+                    'B': 1, '2': 1, 'OPTION B': 1, 'OPTION 2': 1, 'OPT B': 1, 'OPT 2': 1,
+                    'C': 2, '3': 2, 'OPTION C': 2, 'OPTION 3': 2, 'OPT C': 2, 'OPT 3': 2,
+                    'D': 3, '4': 3, 'OPTION D': 3, 'OPTION 4': 3, 'OPT D': 3, 'OPT 4': 3
                 };
 
                 const mapAnswerToText = (ans) => {
-                    const upperAns = ans.toUpperCase();
-                    if (optionMap[upperAns] !== undefined && options[optionMap[upperAns]]) {
-                        return options[optionMap[upperAns]].text;
+                    if (!ans) return '';
+                    const str = String(ans).trim();
+                    const cleaned = str.toUpperCase().replace(/^(OPTION|OPT|CHOICE)\s+/i, '').trim();
+                    if (optionMap[cleaned] !== undefined && options[optionMap[cleaned]]) {
+                        return options[optionMap[cleaned]].text;
                     }
-                    return ans; // fallback to the text itself if they provided the full text
+                    const upper = str.toUpperCase();
+                    if (optionMap[upper] !== undefined && options[optionMap[upper]]) {
+                        return options[optionMap[upper]].text;
+                    }
+                    // Try case-insensitive text match with options
+                    const matched = options.find(o => o.text.toLowerCase() === str.toLowerCase());
+                    if (matched) return matched.text;
+                    return str; // fallback to exact text
                 };
                 
                 // For Multiple Correct, correctAnswer might be comma-separated
                 if (qType === 'Multiple Correct') {
                     correctAns = correctAns.split(',').map(s => mapAnswerToText(s.trim()));
-                    const allOptionsText = options.map(o => o.text);
-                    const missingOption = correctAns.find(ans => !allOptionsText.includes(ans));
+                    const allOptionsText = options.map(o => o.text.toLowerCase());
+                    const missingOption = correctAns.find(ans => !allOptionsText.includes(ans.toLowerCase()));
                     if (missingOption) {
                         errors.push(`Row ${rowNumber}: Correct answer '${missingOption}' does not match any provided option`);
                         return;
                     }
-                    // The DB probably expects an array or comma-separated string depending on the model,
-                    // Assuming string for now based on what was there, or array. Wait, previous code didn't join it back.
-                    // If the schema expects a string, maybe it should be joined. The old code left it as an array if it was multiple correct, wait! 
-                    // No, the old code actually left it as an array? Let's check `questions.push` at the end... it just passes `correctAns`. 
-                    // Let's keep it as is (array).
                 } else {
                     correctAns = mapAnswerToText(correctAns);
-                    const allOptionsText = options.map(o => o.text);
-                    if (!allOptionsText.includes(correctAns)) {
-                        errors.push(`Row ${rowNumber}: Correct answer '${correctAns}' does not match any provided option`);
+                    const allOptionsText = options.map(o => o.text.toLowerCase());
+                    if (!allOptionsText.includes(correctAns.toLowerCase())) {
+                        errors.push(`Row ${rowNumber}: Correct answer '${correctAns}' does not match any provided option (use A, B, C, D or Option A, or exact option text)`);
                         return;
                     }
                 }

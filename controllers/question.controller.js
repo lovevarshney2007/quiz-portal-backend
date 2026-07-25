@@ -68,7 +68,11 @@ const importPreview = catchAsync(async (req, res) => {
     }
 
     if (!result.success) {
-        return res.status(400).json({ status: 'fail', errors: result.errors });
+        return res.status(400).json({ 
+            status: 'fail', 
+            message: `Spreadsheet format error: ${result.errors.join(' | ')}`,
+            errors: result.errors 
+        });
     }
     
     res.status(200).json({ status: 'success', data: result.preview });

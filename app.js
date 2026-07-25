@@ -32,6 +32,12 @@ const allowedOrigins = [
     'https://quiz-neon-three.vercel.app', // Your deployed Vercel frontend
     'http://localhost:3000', 
     'http://localhost:5173',
+    'http://localhost:5173/',
+    'http://192.168.56.1:5173',
+    'http://192.168.56.1:5173/',
+    'http://192.168.1.4:5173',
+    'http://192.168.1.4:5173/',
+    'https://quiz-phi-snowy.vercel.app',
     'https://quiz-phi-snowy.vercel.app/'
 ];
 
@@ -40,7 +46,14 @@ app.use(cors({
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
-        if (allowedOrigins.indexOf(origin) !== -1) {
+        const cleanOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+        const isAllowed = allowedOrigins.some(allowed => {
+            if (!allowed) return false;
+            const cleanAllowed = allowed.endsWith('/') ? allowed.slice(0, -1) : allowed;
+            return cleanAllowed === cleanOrigin;
+        });
+
+        if (isAllowed) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -90,7 +103,9 @@ app.use('/api/v1/questions', apiLimiter, questionRoutes);
 app.use('/api/v1/attempts', apiLimiter, attemptRoutes);
 app.use('/api/v1/results', apiLimiter, resultRoutes);
 app.use('/api/v1/leaderboard', apiLimiter, leaderboardRoutes);
+app.use('/api/v1/leaderboards', apiLimiter, leaderboardRoutes);
 app.use('/api/v1/dashboard', apiLimiter, dashboardRoutes);
+app.use('/api/v1/violation', apiLimiter, violationRoutes);
 app.use('/api/v1/violations', apiLimiter, violationRoutes);
 
 // Health Check

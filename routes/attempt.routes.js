@@ -13,5 +13,6 @@ router.post('/save', validate(autoSaveSchema), attemptController.autoSave);
 router.get('/state/:examId', attemptController.getState);
 router.get('/summary/:examId', attemptController.getSummary);
 router.post('/submit', validate(submitExamSchema), attemptController.submitExam);
+router.post('/reset', attemptController.resetAttempt);
 
 module.exports = router;
