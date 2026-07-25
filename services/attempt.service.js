@@ -83,11 +83,20 @@ class AttemptService {
     async autoSave(userId, examId, payload) {
         const attempt = await attemptRepository.findAttemptByUserAndExam(userId, examId);
         if (!attempt || attempt.status !== 'InProgress') {
-            throw new CustomError('Active exam attempt not found', 400);
+            throw new CustomError('Active exam attempt not found or exam is already submitted', 400);
         }
 
-        // Server-controlled timer validation
+        // Server-controlled timer & exam status validation
         const exam = await examRepository.findById(examId);
+        if (!exam) {
+            throw new CustomError('Exam not found', 404);
+        }
+
+        if (exam.status === 'Completed' || exam.status === 'Archived') {
+            await this.submitExam(userId, examId, true).catch(() => {});
+            throw new CustomError('Exam has been completed by the administrator', 403);
+        }
+
         const timeElapsed = (Date.now() - attempt.startTime.getTime()) / 60000;
         if (timeElapsed > exam.duration) {
             await this.submitExam(userId, examId, true);

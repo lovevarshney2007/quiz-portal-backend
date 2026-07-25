@@ -70,8 +70,25 @@ class ExamService {
 
     async completeExam(examId) {
         const exam = await this.getExamById(examId);
-        if (exam.status !== 'Started') throw new CustomError('Only started exams can be completed', 400);
+        if (exam.status !== 'Started' && exam.status !== 'Published') {
+            throw new CustomError('Only active exams can be marked as completed', 400);
+        }
+
         const completedExam = await examRepository.updateStatus(examId, 'Completed');
+
+        // Auto-submit all in-progress student attempts for this exam immediately
+        const ExamAttempt = require('../models/ExamAttempt');
+        const attemptService = require('./attempt.service');
+        const activeAttempts = await ExamAttempt.find({ examId, status: 'InProgress' });
+
+        for (const att of activeAttempts) {
+            try {
+                await attemptService.submitExam(att.userId, examId, true);
+            } catch (err) {
+                console.error(`Error auto-submitting attempt for user ${att.userId}:`, err.message);
+            }
+        }
+
         return completedExam;
     }
 
