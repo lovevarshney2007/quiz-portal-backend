@@ -153,6 +153,50 @@ class ExamService {
         const data = await redisClient.get(key);
         return data ? JSON.parse(data) : null;
     }
+
+    async getLiveStudents(examId) {
+        const ExamAttempt = require('../models/ExamAttempt');
+        const QuestionStatus = require('../models/QuestionStatus');
+        
+        let query = { status: 'InProgress' };
+        if (examId && examId !== 'all' && examId !== 'undefined' && examId !== 'null') {
+            query.examId = examId;
+        }
+
+        const attempts = await ExamAttempt.find(query)
+            .populate('userId', 'name studentNumber rollNumber email branch section')
+            .populate('examId', 'title duration totalQuestions');
+
+        const liveStudents = await Promise.all(attempts.map(async (att) => {
+            const statuses = await QuestionStatus.find({ attemptId: att._id });
+            const answeredCount = statuses.filter(s => 
+                s.status === 'Answered' || 
+                s.status === 'AnsweredMarkedForReview' || 
+                (s.givenAnswer && (Array.isArray(s.givenAnswer) ? s.givenAnswer.length > 0 : String(s.givenAnswer).trim() !== ''))
+            ).length;
+
+            const student = att.userId || {};
+            const exam = att.examId || {};
+
+            return {
+                attemptId: att._id,
+                studentId: student._id || att.userId,
+                studentName: student.name || 'Unknown Student',
+                studentNumber: student.studentNumber || student.rollNumber || 'N/A',
+                email: student.email || 'N/A',
+                examId: exam._id || att.examId,
+                examTitle: exam.title || 'Live Exam',
+                totalQuestions: exam.totalQuestions || 0,
+                startTime: att.startTime,
+                status: att.status,
+                answeredCount,
+                tabSwitchCount: att.tabSwitchCount || 0,
+                fullscreenExits: att.fullscreenExits || 0
+            };
+        }));
+
+        return liveStudents;
+    }
 }
 
 module.exports = new ExamService();

@@ -89,6 +89,11 @@ const syncStudentResponse = catchAsync(async (req, res) => {
     res.status(200).json({ status: 'success', message: 'Responses saved successfully' });
 });
 
+const getLiveStudents = catchAsync(async (req, res) => {
+    const liveStudents = await examService.getLiveStudents(req.params.id || req.query.examId);
+    res.status(200).json({ status: 'success', data: { liveStudents } });
+});
+
 module.exports = {
     createExam,
     getExam,
@@ -104,5 +109,6 @@ module.exports = {
     extendExam,
     duplicateExam,
     forceSubmit,
-    syncStudentResponse
+    syncStudentResponse,
+    getLiveStudents
 };

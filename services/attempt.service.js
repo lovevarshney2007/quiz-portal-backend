@@ -150,15 +150,27 @@ class AttemptService {
         let attempted = 0, markedForReview = 0, unattempted = 0;
         
         Object.values(state.questions).forEach(q => {
-            if (q.status === 'Answered') attempted++;
-            else if (q.status === 'MarkedForReview' || q.status === 'AnsweredMarkedForReview') markedForReview++;
-            else unattempted++;
+            const hasAnswer = q.givenAnswer && (Array.isArray(q.givenAnswer) ? q.givenAnswer.length > 0 : String(q.givenAnswer).trim() !== '');
+            const isAnswered = q.status === 'Answered' || q.status === 'AnsweredMarkedForReview' || hasAnswer;
+
+            if (isAnswered) {
+                attempted++;
+                if (q.status === 'AnsweredMarkedForReview' || q.status === 'MarkedForReview') {
+                    markedForReview++;
+                }
+            } else if (q.status === 'MarkedForReview') {
+                markedForReview++;
+            } else {
+                unattempted++;
+            }
         });
 
         // Add remaining unvisited questions from the total exam questions
         const exam = await examRepository.findById(examId);
-        const totalVisited = attempted + markedForReview + unattempted;
-        unattempted += Math.max(0, exam.totalQuestions - totalVisited);
+        const totalVisited = Object.keys(state.questions).length;
+        if (exam && exam.totalQuestions) {
+            unattempted += Math.max(0, exam.totalQuestions - totalVisited);
+        }
 
         return { attempted, markedForReview, unattempted };
     }
