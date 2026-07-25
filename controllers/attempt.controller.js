@@ -26,8 +26,8 @@ const getSummary = catchAsync(async (req, res) => {
 });
 
 const submitExam = catchAsync(async (req, res) => {
-    const { examId } = req.body;
-    const attempt = await attemptService.submitExam(req.user._id, examId, false);
+    const { examId, answers } = req.body;
+    const attempt = await attemptService.submitExam(req.user._id, examId, false, answers);
     res.status(200).json({ status: 'success', data: { attempt } });
 });
 

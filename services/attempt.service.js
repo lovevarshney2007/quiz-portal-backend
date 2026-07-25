@@ -245,10 +245,25 @@ class AttemptService {
         return state;
     }
 
-    async submitExam(userId, examId, isAutoSubmit = false) {
+    async submitExam(userId, examId, isAutoSubmit = false, answersPayload = null) {
         const attempt = await attemptRepository.findAttemptByUserAndExam(userId, examId);
         if (!attempt || attempt.status !== 'InProgress') {
             throw new CustomError('Active exam attempt not found', 400);
+        }
+
+        // 1. If explicit answers array provided in request, write directly to MongoDB
+        if (Array.isArray(answersPayload) && answersPayload.length > 0) {
+            const explicitUpdates = answersPayload.map(ans => {
+                const qId = (ans.questionId || ans.question || '').toString();
+                if (!qId) return null;
+                const statusData = {
+                    status: ans.status || (ans.givenAnswer && ans.givenAnswer.length > 0 ? 'Answered' : 'NotVisited'),
+                    givenAnswer: Array.isArray(ans.givenAnswer) ? ans.givenAnswer : (ans.givenAnswer ? [ans.givenAnswer] : []),
+                    timeSpent: Number(ans.timeSpent || 0)
+                };
+                return attemptRepository.updateQuestionStatus(attempt._id, qId, statusData);
+            }).filter(Boolean);
+            await Promise.all(explicitUpdates).catch(err => console.error("Error writing explicit answers to Mongo:", err));
         }
 
         const redisClient = require('../config/redis');
