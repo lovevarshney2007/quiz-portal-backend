@@ -18,6 +18,33 @@ class AttemptService {
         
         if (attempt) {
             if (attempt.status !== 'InProgress') {
+                // Check if user is an exempt test user (Admin or love2510084@akgec.ac.in / 2510084)
+                const userRepository = require('../repositories/user.repository');
+                const user = await userRepository.findById(userId).catch(() => null);
+                const email = (user?.email || "").toLowerCase();
+                const role = (user?.role || "").toLowerCase();
+                const studentNum = String(user?.studentNumber || user?.rollNumber || user?.id || "");
+                const isTestExempt = role === 'admin' || email === 'admin@akgec.ac.in' || email === 'love2510084@akgec.ac.in' || studentNum === '2510084';
+
+                if (isTestExempt) {
+                    // For test users: fully reset attempt for a fresh start
+                    // 1. Clear old QuestionStatuses so scores don't bleed from old session
+                    const QuestionStatus = require('../models/QuestionStatus');
+                    await QuestionStatus.deleteMany({ attemptId: attempt._id });
+
+                    // 2. Clear Redis so old answers don't bleed in
+                    const redisClient = require('../config/redis');
+                    await redisClient.del(`exam_attempt:${examId}:${userId}`).catch(() => {});
+
+                    // 3. Reset attempt fields
+                    attempt.status = 'InProgress';
+                    attempt.startTime = new Date();
+                    attempt.endTime = null;
+                    attempt.tabSwitchCount = 0;
+                    attempt.fullscreenExits = 0;
+                    await attempt.save();
+                    return { attempt, isResume: false };
+                }
                 throw new CustomError('Exam already submitted', 400);
             }
             // Resume session
@@ -67,13 +94,27 @@ class AttemptService {
         const redisClient = require('../config/redis');
         const key = `exam_attempt:${examId}:${userId}`;
 
-        // Get current state from Redis or start fresh
+        // Get current state from Redis or start fresh with DB fallback
         const existingDataStr = await redisClient.get(key);
-        let state = existingDataStr ? JSON.parse(existingDataStr) : {
-            questions: {},
-            tabSwitchCount: attempt.tabSwitchCount,
-            fullscreenExits: attempt.fullscreenExits
-        };
+        let state;
+        if (existingDataStr) {
+            state = JSON.parse(existingDataStr);
+        } else {
+            const statuses = await attemptRepository.getQuestionStatuses(attempt._id);
+            state = {
+                questions: {},
+                tabSwitchCount: attempt.tabSwitchCount,
+                fullscreenExits: attempt.fullscreenExits
+            };
+            statuses.forEach(s => {
+                state.questions[s.questionId.toString()] = {
+                    status: s.status,
+                    givenAnswer: s.givenAnswer,
+                    timeSpent: s.timeSpent,
+                    visitedCount: s.visitedCount
+                };
+            });
+        }
 
         // Update violations if provided
         if (payload.tabSwitchCount !== undefined) state.tabSwitchCount = payload.tabSwitchCount;
@@ -90,6 +131,9 @@ class AttemptService {
             if (payload.givenAnswer !== undefined) state.questions[qId].givenAnswer = payload.givenAnswer;
             if (payload.timeSpent) state.questions[qId].timeSpent += payload.timeSpent;
             state.questions[qId].visitedCount += 1;
+
+            // Asynchronously update MongoDB so answers are NEVER lost on logout or page refresh!
+            attemptRepository.updateQuestionStatus(attempt._id, qId, state.questions[qId]).catch(err => console.error("Mongo autoSave background error:", err));
         }
 
         // Save to Redis (expires in 24 hours to prevent memory leaks)
@@ -126,11 +170,7 @@ class AttemptService {
         const key = `exam_attempt:${examId}:${userId}`;
         const existingDataStr = await redisClient.get(key);
         
-        if (existingDataStr) {
-            return JSON.parse(existingDataStr);
-        }
-
-        // Fallback to MongoDB if Redis key expired or hasn't been created
+        // Load statuses from MongoDB to merge and ensure no answers were lost!
         const statuses = await attemptRepository.getQuestionStatuses(attempt._id);
         const state = {
             questions: {},
@@ -146,6 +186,21 @@ class AttemptService {
                 visitedCount: s.visitedCount
             };
         });
+
+        if (existingDataStr) {
+            const redisState = JSON.parse(existingDataStr);
+            if (redisState && redisState.questions) {
+                // Merge redis questions over mongo questions
+                Object.entries(redisState.questions).forEach(([qId, qData]) => {
+                    state.questions[qId] = { ...state.questions[qId], ...qData };
+                });
+            }
+            if (redisState.tabSwitchCount !== undefined) state.tabSwitchCount = redisState.tabSwitchCount;
+            if (redisState.fullscreenExits !== undefined) state.fullscreenExits = redisState.fullscreenExits;
+        } else {
+            // Re-warm Redis from DB
+            await redisClient.set(key, JSON.stringify(state), 'EX', 86400).catch(() => {});
+        }
 
         return state;
     }
@@ -181,15 +236,34 @@ class AttemptService {
         attempt.endTime = new Date();
         await attempt.save();
         
-        // Trigger result generation
-        const { Queue } = require('bullmq');
-        const Redis = require('ioredis');
-        const resultQueue = new Queue('resultQueue', {
-            connection: new Redis(redisClient.redisConfig, { maxRetriesPerRequest: null })
-        });
-        await resultQueue.add('generateResults', { examId });
+        // Directly calculate result in DB immediately!
+        const resultService = require('./result.service');
+        await resultService.calculateResult(attempt._id).catch(err => console.error("Error generating result directly:", err));
+
+        // Also trigger Queue backup
+        try {
+            const { Queue } = require('bullmq');
+            const Redis = require('ioredis');
+            const resultQueue = new Queue('resultQueue', {
+                connection: new Redis(redisClient.redisConfig, { maxRetriesPerRequest: null })
+            });
+            await resultQueue.add('generateResults', { examId });
+        } catch (qErr) {
+            console.warn("Queue trigger skipped:", qErr.message);
+        }
 
         return attempt;
+    }
+
+    async resetAttempt(userId, examId) {
+        await attemptRepository.deleteAttemptByUserAndExam(userId, examId);
+        // Clear both Redis key formats to ensure clean slate
+        await redisClient.del(`attempt:${userId}:${examId}`).catch(() => {});
+        await redisClient.del(`exam_attempt:${examId}:${userId}`).catch(() => {});
+        // Also delete old Result so leaderboard and score reset properly
+        const Result = require('../models/Result');
+        await Result.deleteOne({ student: userId, exam: examId }).catch(() => {});
+        return { message: "Attempt reset successfully for testing" };
     }
 }
 

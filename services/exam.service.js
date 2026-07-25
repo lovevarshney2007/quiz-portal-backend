@@ -24,7 +24,7 @@ class ExamService {
         if (query.status) {
             filter.status = query.status;
         } else if (userRole === 'Student') {
-            filter.status = { $in: ['Published', 'Started'] };
+            filter.status = { $in: ['Draft', 'Published', 'Started', 'Paused', 'Completed'] };
         }
 
         return await examRepository.findAll(filter, { createdAt: -1 }, skip, limit);

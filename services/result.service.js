@@ -9,9 +9,6 @@ class ResultService {
         const attempt = await attemptRepository.findAttemptById(attemptId);
         if (!attempt) throw new CustomError('Attempt not found', 404);
 
-        const existingResult = await resultRepository.findByAttemptId(attemptId);
-        if (existingResult) return existingResult;
-
         const exam = await examRepository.findById(attempt.examId);
         const questions = await questionRepository.findByExamId(attempt.examId);
         const questionStatuses = await attemptRepository.getQuestionStatuses(attemptId);
@@ -94,8 +91,14 @@ class ResultService {
             return sec;
         });
 
+        const userRepository = require('../repositories/user.repository');
+        const studentUser = await userRepository.findById(attempt.userId).catch(() => null);
+
         const resultData = {
             student: attempt.userId,
+            studentName: studentUser?.name || studentUser?.studentName || "Candidate",
+            studentEmail: studentUser?.email || "",
+            studentNumber: String(studentUser?.studentNumber || studentUser?.rollNumber || ""),
             exam: attempt.examId,
             totalQuestions: exam.totalQuestions,
             correctAnswers,
@@ -113,7 +116,7 @@ class ResultService {
             responses
         };
 
-        const result = await resultRepository.create(resultData);
+        const result = await resultRepository.createOrUpdate(resultData);
         
         // Add to Redis Leaderboard
         const redisClient = require('../config/redis');
@@ -122,27 +125,59 @@ class ResultService {
         return result;
     }
 
-    checkAnswer(question, givenAnswer) {
-        if (!givenAnswer || givenAnswer.length === 0) return false;
-
-        // Ensure correctAnswer exists (Mixed type in schema)
-        if (question.correctAnswer === null || question.correctAnswer === undefined) return false;
-
-        // If options were given as an array
-        if (Array.isArray(question.correctAnswer)) {
-            const correctAns = [...question.correctAnswer].sort();
-            const givenAns = [...givenAnswer].sort();
-
-            if (correctAns.length !== givenAns.length) return false;
-
-            for (let i = 0; i < correctAns.length; i++) {
-                if (correctAns[i] !== givenAns[i]) return false;
-            }
-            return true;
+    normalizeToOptionIds(question, answerVal) {
+        if (answerVal === null || answerVal === undefined) return [];
+        let arr = [];
+        if (Array.isArray(answerVal)) {
+            arr = answerVal;
+        } else if (typeof answerVal === 'string' && answerVal.includes(',') && question && question.type === 'Multiple Correct') {
+            arr = answerVal.split(',').map(s => s.trim());
+        } else {
+            arr = [answerVal];
         }
 
-        // Single value comparison
-        return String(question.correctAnswer) === String(givenAnswer);
+        const normalizedIds = [];
+
+        for (const item of arr) {
+            if (item === null || item === undefined) continue;
+            let val = '';
+            if (typeof item === 'object') {
+                val = String(item.id || item.text || '').trim();
+            } else {
+                val = String(item).trim();
+            }
+            if (!val) continue;
+
+            // Check if val matches an option ID or option text
+            if (question && question.options && Array.isArray(question.options) && question.options.length > 0) {
+                const matchedOpt = question.options.find(opt => 
+                    String(opt.id || '').trim().toLowerCase() === val.toLowerCase() ||
+                    String(opt.text || '').trim().toLowerCase() === val.toLowerCase()
+                );
+                if (matchedOpt) {
+                    normalizedIds.push(String(matchedOpt.id).trim().toUpperCase());
+                    continue;
+                }
+            }
+            // Fallback for non-option questions (integer/numerical/true-false without options)
+            normalizedIds.push(val.toLowerCase());
+        }
+        return Array.from(new Set(normalizedIds)).sort();
+    }
+
+    checkAnswer(question, givenAnswer) {
+        if (!givenAnswer || (Array.isArray(givenAnswer) && givenAnswer.length === 0)) return false;
+        if (!question || question.correctAnswer === null || question.correctAnswer === undefined) return false;
+
+        const correctIds = this.normalizeToOptionIds(question, question.correctAnswer);
+        const givenIds = this.normalizeToOptionIds(question, givenAnswer);
+
+        if (correctIds.length === 0 || correctIds.length !== givenIds.length) return false;
+
+        for (let i = 0; i < correctIds.length; i++) {
+            if (correctIds[i] !== givenIds[i]) return false;
+        }
+        return true;
     }
 }
 

@@ -90,7 +90,9 @@ app.use('/api/v1/questions', apiLimiter, questionRoutes);
 app.use('/api/v1/attempts', apiLimiter, attemptRoutes);
 app.use('/api/v1/results', apiLimiter, resultRoutes);
 app.use('/api/v1/leaderboard', apiLimiter, leaderboardRoutes);
+app.use('/api/v1/leaderboards', apiLimiter, leaderboardRoutes);
 app.use('/api/v1/dashboard', apiLimiter, dashboardRoutes);
+app.use('/api/v1/violation', apiLimiter, violationRoutes);
 app.use('/api/v1/violations', apiLimiter, violationRoutes);
 
 // Health Check

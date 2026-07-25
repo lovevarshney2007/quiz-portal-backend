@@ -31,10 +31,17 @@ const submitExam = catchAsync(async (req, res) => {
     res.status(200).json({ status: 'success', data: { attempt } });
 });
 
+const resetAttempt = catchAsync(async (req, res) => {
+    const { examId } = req.body;
+    await attemptService.resetAttempt(req.user._id, examId);
+    res.status(200).json({ status: 'success', message: 'Attempt reset successfully for testing' });
+});
+
 module.exports = {
     startExam,
     autoSave,
     getState,
     getSummary,
-    submitExam
+    submitExam,
+    resetAttempt
 };

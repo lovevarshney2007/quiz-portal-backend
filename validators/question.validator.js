@@ -26,7 +26,7 @@ const updateQuestionSchema = Joi.object({
     options: Joi.array().items(
         Joi.object({
             text: Joi.string().required()
-        })
+        }).unknown(true)
     ).optional(),
     correctAnswer: Joi.any().optional(),
     marks: Joi.number().min(0).optional(),

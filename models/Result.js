@@ -16,6 +16,9 @@ const resultSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    studentName: { type: String, default: "" },
+    studentEmail: { type: String, default: "" },
+    studentNumber: { type: String, default: "" },
     exam: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Exam',

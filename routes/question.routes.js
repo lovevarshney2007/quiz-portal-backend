@@ -16,10 +16,14 @@ const ROLES = require('../constants/roles');
 const router = express.Router();
 
 router.use(protect);
-router.use(authorize(ROLES.ADMIN));
 
+// Accessible to authenticated users (Students taking the exam & Admins)
 router.get('/exam/:examId', questionController.getExamQuestions);
 router.get('/:id', questionController.getQuestion);
+
+// Admin only routes
+router.use(authorize(ROLES.ADMIN));
+
 router.post('/', validate(createQuestionSchema), questionController.createQuestion);
 router.patch('/:id', validate(updateQuestionSchema), questionController.updateQuestion);
 router.delete('/:id', questionController.deleteQuestion);

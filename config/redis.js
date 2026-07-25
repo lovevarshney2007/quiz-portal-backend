@@ -9,7 +9,14 @@ if (process.env.REDIS_URL) {
         host: process.env.REDIS_HOST || '127.0.0.1',
         port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
         password: process.env.REDIS_PASSWORD || undefined,
-        tls: process.env.REDIS_TLS === 'true' ? {} : undefined
+        tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
+        maxRetriesPerRequest: 3,
+        retryStrategy(times) {
+            if (times > 3) {
+                return null; // Stop retrying after 3 attempts to avoid crash
+            }
+            return Math.min(times * 200, 2000);
+        }
     };
 }
 
@@ -20,7 +27,7 @@ redisClient.on('connect', () => {
 });
 
 redisClient.on('error', (err) => {
-    console.error('Redis connection error:', err);
+    console.warn('Redis connection warning:', err.message || err);
 });
 
 // Attach redisConfig to the client so other modules can use the same connection parameters
