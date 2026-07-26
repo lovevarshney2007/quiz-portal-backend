@@ -1,5 +1,6 @@
 const attemptRepository = require('../repositories/attempt.repository');
 const examRepository = require('../repositories/exam.repository');
+const redisClient = require('../config/redis');
 const CustomError = require('../utils/customError');
 
 class AttemptService {
@@ -139,8 +140,20 @@ class AttemptService {
                 state.questions[qId] = { timeSpent: 0, visitedCount: 0 };
             }
             
-            if (payload.givenAnswer !== undefined) state.questions[qId].givenAnswer = payload.givenAnswer;
-            
+            // 1. Safe givenAnswer overwrite (Your race-condition protection logic)
+            if (payload.givenAnswer !== undefined) {
+                const isNonEmpty = Array.isArray(payload.givenAnswer)
+                    ? payload.givenAnswer.length > 0
+                    : (payload.givenAnswer !== null && payload.givenAnswer !== '' && payload.givenAnswer !== undefined);
+                const isDeliberateClear = payload.status === 'Visited' || payload.status === 'Skipped';
+                const existingIsEmpty = !state.questions[qId].givenAnswer ||
+                    (Array.isArray(state.questions[qId].givenAnswer) && state.questions[qId].givenAnswer.length === 0);
+                if (isNonEmpty || isDeliberateClear || existingIsEmpty) {
+                    state.questions[qId].givenAnswer = payload.givenAnswer;
+                }
+            }
+
+            // 2. Status update & Auto-Answered verification (Friend's logic)
             const hasAnswer = state.questions[qId].givenAnswer && (
                 Array.isArray(state.questions[qId].givenAnswer) 
                     ? state.questions[qId].givenAnswer.length > 0 && state.questions[qId].givenAnswer.some(a => String(a).trim() !== '')
@@ -156,6 +169,7 @@ class AttemptService {
             if (hasAnswer && (state.questions[qId].status === 'Visited' || state.questions[qId].status === 'NotVisited')) {
                 state.questions[qId].status = 'Answered';
             }
+
 
             if (payload.timeSpent) state.questions[qId].timeSpent += payload.timeSpent;
             state.questions[qId].visitedCount += 1;
