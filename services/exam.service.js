@@ -70,20 +70,30 @@ class ExamService {
 
     async completeExam(examId) {
         const exam = await this.getExamById(examId);
-        if (exam.status !== 'Started' && exam.status !== 'Published') {
-            throw new CustomError('Only active exams can be marked as completed', 400);
-        }
 
+        // Update exam status to Completed in MongoDB first
         const completedExam = await examRepository.updateStatus(examId, 'Completed');
 
-        // Auto-submit all in-progress student attempts for this exam immediately
+        // Auto-submit all non-submitted student attempts for this exam
         const ExamAttempt = require('../models/ExamAttempt');
         const attemptService = require('./attempt.service');
-        const activeAttempts = await ExamAttempt.find({ examId, status: 'InProgress' });
+        const uncompletedAttempts = await ExamAttempt.find({ 
+            examId, 
+            status: { $nin: ['Submitted', 'Completed'] } 
+        });
 
-        for (const att of activeAttempts) {
+        for (const att of uncompletedAttempts) {
             try {
-                await attemptService.submitExam(att.userId, examId, true);
+                await attemptService.submitExam(att.userId, examId, true).catch(async (subErr) => {
+                    console.warn(`Fallback force-completing attempt ${att._id}:`, subErr.message);
+                    att.status = 'Submitted';
+                    att.isAutoSubmitted = true;
+                    att.submittedAt = new Date();
+                    await att.save();
+                    
+                    const resultService = require('./result.service');
+                    await resultService.calculateResult(att._id).catch(() => {});
+                });
             } catch (err) {
                 console.error(`Error auto-submitting attempt for user ${att.userId}:`, err.message);
             }

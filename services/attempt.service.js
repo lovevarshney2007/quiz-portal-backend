@@ -247,8 +247,14 @@ class AttemptService {
 
     async submitExam(userId, examId, isAutoSubmit = false, answersPayload = null) {
         const attempt = await attemptRepository.findAttemptByUserAndExam(userId, examId);
-        if (!attempt || attempt.status !== 'InProgress') {
-            throw new CustomError('Active exam attempt not found', 400);
+        if (!attempt) {
+            throw new CustomError('Exam attempt not found', 404);
+        }
+
+        if (attempt.status === 'Submitted') {
+            const resultService = require('./result.service');
+            const result = await resultService.calculateResult(attempt._id).catch(() => null);
+            return { attempt, result };
         }
 
         // 1. If explicit answers array provided in request, write directly to MongoDB
