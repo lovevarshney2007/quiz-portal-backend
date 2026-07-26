@@ -17,11 +17,81 @@ const usersToSeed = [
         role: "Student",
         isVerified: true
     },
-    // You can add an Admin user as well if needed:
     {
         name: "Super Admin",
         email: "admin@akgec.ac.in",
         role: "Admin",
+        isVerified: true
+    },
+    // --- TEST STUDENT ACCOUNTS FOR EXAM PORTAL ---
+    {
+        name: "Aarav Sharma",
+        email: "aarav2510001@akgec.ac.in",
+        studentNumber: "2510001",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Ananya Verma",
+        email: "ananya2510002@akgec.ac.in",
+        studentNumber: "2510002",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Rohan Gupta",
+        email: "rohan2510003@akgec.ac.in",
+        studentNumber: "2510003",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Ishita Singh",
+        email: "ishita2510004@akgec.ac.in",
+        studentNumber: "2510004",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Kabir Mehta",
+        email: "kabir2510005@akgec.ac.in",
+        studentNumber: "2510005",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Suhani Patel",
+        email: "suhani2510006@akgec.ac.in",
+        studentNumber: "2510006",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Devvrat Kumar",
+        email: "devvrat2510007@akgec.ac.in",
+        studentNumber: "2510007",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Meera Joshi",
+        email: "meera2510008@akgec.ac.in",
+        studentNumber: "2510008",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Yashvardhan Singh",
+        email: "yash2510009@akgec.ac.in",
+        studentNumber: "2510009",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Tanya Nair",
+        email: "tanya2510010@akgec.ac.in",
+        studentNumber: "2510010",
+        role: "Student",
         isVerified: true
     }
 ];
