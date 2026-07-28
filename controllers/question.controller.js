@@ -10,12 +10,34 @@ const createQuestion = catchAsync(async (req, res) => {
 
 const getExamQuestions = catchAsync(async (req, res) => {
     const questions = await questionService.getQuestionsByExamId(req.params.examId);
-    res.status(200).json({ status: 'success', data: { questions } });
+
+    // Strip sensitive answer data for non-admin users to prevent cheating
+    const isAdmin = req.user && req.user.role === 'Admin';
+    const sanitized = isAdmin
+        ? questions
+        : questions.map((q) => {
+              const obj = typeof q.toObject === 'function' ? q.toObject() : { ...q };
+              delete obj.correctAnswer;
+              delete obj.explanation; // explanation can directly reveal the answer
+              return obj;
+          });
+
+    res.status(200).json({ status: 'success', data: { questions: sanitized } });
 });
 
 const getQuestion = catchAsync(async (req, res) => {
     const question = await questionService.getQuestionById(req.params.id);
-    res.status(200).json({ status: 'success', data: { question } });
+
+    // Strip answer data for non-admin callers (same policy as getExamQuestions)
+    const isAdmin = req.user && req.user.role === 'Admin';
+    const data = isAdmin ? question : (() => {
+        const obj = typeof question.toObject === 'function' ? question.toObject() : { ...question };
+        delete obj.correctAnswer;
+        delete obj.explanation;
+        return obj;
+    })();
+
+    res.status(200).json({ status: 'success', data: { question: data } });
 });
 
 const updateQuestion = catchAsync(async (req, res) => {

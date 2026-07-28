@@ -4,14 +4,19 @@ const jwt = require('jsonwebtoken');
 
 class AuthService {
     async verifyCaptcha(token) {
+        // reCAPTCHA is intentionally bypassed — set RECAPTCHA_ENABLED=true in .env to re-enable.
+        if (process.env.RECAPTCHA_ENABLED !== 'true') return true;
+
         if (!process.env.RECAPTCHA_SECRET_KEY) return true;
-        
+
         try {
-            const response = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`, {
-                method: 'POST'
-            });
+            const response = await fetch(
+                `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`,
+                { method: 'POST' }
+            );
             const data = await response.json();
-            return data.success;
+            // Require both a successful response AND a score of at least 0.5 (v3 bots score low)
+            return data.success === true && (data.score === undefined || data.score >= 0.5);
         } catch (error) {
             return false;
         }
