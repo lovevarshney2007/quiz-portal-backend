@@ -1,13 +1,34 @@
 const Question = require('../models/Question');
 
 class QuestionRepository {
+    constructor() {
+        this.pendingQuestions = {};
+    }
+
     async create(questionData) {
         return await Question.create(questionData);
     }
 
-    // CRITICAL FIX: Query uses 'exam' field (matching Question.js schema), NOT 'examId'
     async findByExamId(examId) {
-        return await Question.find({ exam: examId }).sort({ order: 1 });
+        if (this.pendingQuestions[examId]) return await this.pendingQuestions[examId];
+        
+        this.pendingQuestions[examId] = (async () => {
+            const redisClient = require('../config/redis');
+            const cacheKey = `questions_exam_${examId}`;
+            const cached = await redisClient.get(cacheKey).catch(()=>null);
+            if (cached) {
+                delete this.pendingQuestions[examId];
+                return JSON.parse(cached);
+            }
+            const questions = await Question.find({ exam: examId }).sort({ order: 1 }).lean();
+            if (questions && questions.length > 0) {
+                await redisClient.set(cacheKey, JSON.stringify(questions), 'EX', 3600).catch(()=>null);
+            }
+            delete this.pendingQuestions[examId];
+            return questions;
+        })();
+        
+        return await this.pendingQuestions[examId];
     }
 
     async findById(id) {

@@ -3,11 +3,50 @@ const QuestionStatus = require('../models/QuestionStatus');
 
 class AttemptRepository {
     async createAttempt(attemptData) {
-        return await ExamAttempt.create(attemptData);
+        const mongoose = require('mongoose');
+        const attemptId = new mongoose.Types.ObjectId();
+        
+        // Convert to ObjectId if necessary
+        const safeUserId = typeof attemptData.userId === 'string' ? new mongoose.Types.ObjectId(attemptData.userId) : attemptData.userId;
+        const safeExamId = typeof attemptData.examId === 'string' ? new mongoose.Types.ObjectId(attemptData.examId) : attemptData.examId;
+
+        const insertData = {
+            _id: attemptId,
+            ...attemptData,
+            userId: safeUserId,
+            examId: safeExamId,
+            status: 'InProgress',
+            timeSpent: 0,
+            tabSwitchCount: 0,
+            fullscreenExits: 0,
+            isSuspicious: false,
+            startTime: new Date(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        // Use native insert to bypass Mongoose's massive overhead for large arrays
+        ExamAttempt.collection.insertOne(insertData).catch(err => {
+            console.error('Async insert failed for ExamAttempt:', err);
+        });
+        
+        const redisClient = require('../config/redis');
+        const cacheKey = `exam_attempt:${safeExamId}:${safeUserId}`;
+        await redisClient.set(cacheKey, JSON.stringify(insertData), 'EX', 7200).catch(() => null);
+        
+        return insertData;
     }
 
     async findAttemptByUserAndExam(userId, examId) {
-        return await ExamAttempt.findOne({ userId, examId });
+        const redisClient = require('../config/redis');
+        const cacheKey = `exam_attempt:${examId}:${userId}`;
+        const cached = await redisClient.get(cacheKey).catch(() => null);
+        if (cached) return JSON.parse(cached);
+        
+        const attempt = await ExamAttempt.findOne({ userId, examId }).lean();
+        if (attempt) {
+            await redisClient.set(cacheKey, JSON.stringify(attempt), 'EX', 7200).catch(() => null);
+        }
+        return attempt;
     }
 
     async findAttemptById(attemptId) {

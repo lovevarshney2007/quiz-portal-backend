@@ -1,6 +1,10 @@
 const User = require('../models/User');
 
 class UserRepository {
+    constructor() {
+        this.pendingUsers = {};
+    }
+
     async create(userData) {
         const user = new User(userData);
         return await user.save();
@@ -11,7 +15,25 @@ class UserRepository {
     }
 
     async findById(id) {
-        return await User.findById(id);
+        if (this.pendingUsers[id]) return await this.pendingUsers[id];
+        
+        this.pendingUsers[id] = (async () => {
+            const redisClient = require('../config/redis');
+            const cacheKey = `user_cache_${id}`;
+            const cached = await redisClient.get(cacheKey).catch(() => null);
+            if (cached) {
+                delete this.pendingUsers[id];
+                return JSON.parse(cached);
+            }
+            const user = await User.findById(id).lean();
+            if (user) {
+                await redisClient.set(cacheKey, JSON.stringify(user), 'EX', 3600).catch(() => null);
+            }
+            delete this.pendingUsers[id];
+            return user;
+        })();
+        
+        return await this.pendingUsers[id];
     }
 
     async findByStudentNumber(studentNumber) {
