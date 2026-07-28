@@ -120,7 +120,7 @@ You can use **Postman**, **Insomnia**, or **cURL** to test the endpoints.
   "message": "Logged out successfully"
 }
 ```
-
+ 
 ### 1.5. Dashboard APIs
 
 *Require Authorization header: `Bearer <accessToken>`*
