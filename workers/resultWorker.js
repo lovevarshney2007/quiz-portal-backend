@@ -8,8 +8,8 @@ const { logger } = require('../config/logger');
 
 const resultWorker = new Worker('resultQueue', async job => {
     if (job.name === 'generateResults') {
-        const { examId } = job.data;
-        logger.info(`Starting result generation for exam: ${examId}`);
+        const { examId, attemptId } = job.data;
+        logger.info(`Starting result generation for exam: ${examId} attempt: ${attemptId || 'ALL'}`);
 
         try {
             const exam = await examRepository.findById(examId);
@@ -17,19 +17,25 @@ const resultWorker = new Worker('resultQueue', async job => {
 
             const attemptRepository = require('../repositories/attempt.repository');
             const resultService = require('../services/result.service');
-            const attempts = await attemptRepository.findAttemptsByExamId(examId);
 
-            for (const att of attempts) {
-                if (att.status === 'Submitted' || att.status === 'AutoSubmitted') {
-                    try {
-                        await resultService.calculateResult(att._id);
-                    } catch (err) {
-                        logger.error(`Failed to generate result for attempt ${att._id}: ${err.message}`);
+            if (attemptId) {
+                // Generate for a single attempt (O(1) submission)
+                await resultService.calculateResult(attemptId);
+            } else {
+                // Fallback: Generate for all attempts (Admin bulk action)
+                const attempts = await attemptRepository.findAttemptsByExamId(examId);
+                for (const att of attempts) {
+                    if (att.status === 'Submitted' || att.status === 'AutoSubmitted') {
+                        try {
+                            await resultService.calculateResult(att._id);
+                        } catch (err) {
+                            logger.error(`Failed to generate result for attempt ${att._id}: ${err.message}`);
+                        }
                     }
                 }
             }
 
-            logger.info(`Completed result generation for exam: ${examId}`);
+            logger.info(`Completed result generation for exam: ${examId} attempt: ${attemptId || 'ALL'}`);
         } catch (error) {
             logger.error(`Error generating results for exam ${examId}: ${error.message}`);
             throw error;

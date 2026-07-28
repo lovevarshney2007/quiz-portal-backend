@@ -6,8 +6,13 @@ const attemptRepository = require('../repositories/attempt.repository');
 
 const syncWorker = new Worker('syncQueue', async job => {
     if (job.name === 'syncRedisToMongo') {
-        const hashKeys = await redisClient.keys('exam_attempt_hash:*');
-        
+        let cursor = '0';
+        const hashKeys = [];
+        do {
+            const res = await redisClient.scan(cursor, 'MATCH', 'exam_attempt_hash:*', 'COUNT', 100);
+            cursor = res[0];
+            hashKeys.push(...res[1]);
+        } while (cursor !== '0');
         for (const key of hashKeys) {
             const parts = key.split(':');
             const examId = parts[1];

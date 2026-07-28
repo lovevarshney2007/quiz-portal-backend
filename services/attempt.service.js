@@ -125,20 +125,35 @@ class AttemptService {
         let qState = null;
         if (payload.questionId) {
             const qId = payload.questionId.toString();
-            const qStr = await redisClient.hget(key, `q_${qId}`);
             
-            if (qStr) {
-                qState = JSON.parse(qStr);
-            } else {
-                const statuses = await attemptRepository.getQuestionStatuses(attempt._id);
-                const existingStatus = statuses.find(s => s.questionId.toString() === qId);
-                qState = existingStatus ? {
-                    status: existingStatus.status,
-                    givenAnswer: existingStatus.givenAnswer,
-                    timeSpent: existingStatus.timeSpent || 0,
-                    visitedCount: existingStatus.visitedCount || 0
-                } : { timeSpent: 0, visitedCount: 0 };
+            // Acquire distributed lock for this specific question to prevent HGET/HSET race conditions
+            const lockKey = `lock:${key}:q_${qId}`;
+            let acquired = false;
+            for (let i = 0; i < 10; i++) {
+                acquired = await redisClient.set(lockKey, '1', 'NX', 'PX', 2000); // 2 second lock
+                if (acquired) break;
+                await new Promise(r => setTimeout(r, 100)); // wait 100ms before retry
             }
+            if (!acquired) {
+                console.warn(`Failed to acquire lock for ${lockKey}`);
+                throw new CustomError('Too many concurrent requests, please slow down', 429);
+            }
+
+            try {
+                const qStr = await redisClient.hget(key, `q_${qId}`);
+                
+                if (qStr) {
+                    qState = JSON.parse(qStr);
+                } else {
+                    const statuses = await attemptRepository.getQuestionStatuses(attempt._id);
+                    const existingStatus = statuses.find(s => s.questionId.toString() === qId);
+                    qState = existingStatus ? {
+                        status: existingStatus.status,
+                        givenAnswer: existingStatus.givenAnswer,
+                        timeSpent: existingStatus.timeSpent || 0,
+                        visitedCount: existingStatus.visitedCount || 0
+                    } : { timeSpent: 0, visitedCount: 0 };
+                }
             
             // 1. Safe givenAnswer overwrite (Race-condition protection logic)
             if (payload.givenAnswer !== undefined) {
@@ -176,8 +191,12 @@ class AttemptService {
             // Atomically write this specific question state back to Hash
             await redisClient.hset(key, `q_${qId}`, JSON.stringify(qState));
 
-            // Asynchronously update MongoDB so answers are NEVER lost on logout or page refresh!
-            attemptRepository.updateQuestionStatus(attempt._id, qId, qState).catch(err => console.error("Mongo autoSave background error:", err));
+            // Await update to MongoDB so we don't saturate the Node.js event loop with unhandled promises
+            await attemptRepository.updateQuestionStatus(attempt._id, qId, qState).catch(err => console.error("Mongo autoSave background error:", err));
+
+            } finally {
+                await redisClient.del(`lock:${key}:q_${qId}`);
+            }
         }
 
         // Save to Redis (expires in 24 hours to prevent memory leaks)
@@ -266,23 +285,16 @@ class AttemptService {
     }
 
     async submitExam(userId, examId, isAutoSubmit = false, answersPayload = null) {
-        // 1. Atomically transition status from InProgress -> Submitted/AutoSubmitted
-        const targetStatus = isAutoSubmit ? 'AutoSubmitted' : 'Submitted';
         const ExamAttempt = require('../models/ExamAttempt');
-        const attempt = await ExamAttempt.findOneAndUpdate(
-            { userId, examId, status: 'InProgress' },
-            { $set: { status: targetStatus, endTime: new Date() } },
-            { new: true }
-        );
-
-        // If attempt is null, it was already submitted by another thread/request!
-        if (!attempt) {
-            const existingAttempt = await attemptRepository.findAttemptByUserAndExam(userId, examId);
-            if (!existingAttempt) throw new CustomError('Exam attempt not found', 404);
-            return existingAttempt; // Return idempotently without recalculating
+        // 1. Fetch current attempt first to verify status
+        let attempt = await attemptRepository.findAttemptByUserAndExam(userId, examId);
+        if (!attempt) throw new CustomError('Exam attempt not found', 404);
+        
+        if (attempt.status !== 'InProgress') {
+            return attempt; // Return idempotently without recalculating if already submitted
         }
 
-        // 1. If explicit answers array provided in request, write directly to MongoDB
+        // 2. If explicit answers array provided in request, write directly to MongoDB
         if (Array.isArray(answersPayload) && answersPayload.length > 0) {
             const explicitUpdates = answersPayload.map(ans => {
                 const qId = (ans.questionId || ans.question || '').toString();
@@ -297,19 +309,21 @@ class AttemptService {
             await Promise.all(explicitUpdates).catch(err => console.error("Error writing explicit answers to Mongo:", err));
         }
 
+        // 3. Flush all remaining data from Redis to MongoDB BEFORE marking as submitted
         const redisClient = require('../config/redis');
         const key = `exam_attempt_hash:${examId}:${userId}`;
         const hashData = await redisClient.hgetall(key);
 
+        let finalTabSwitchCount = attempt.tabSwitchCount || 0;
+        let finalFullscreenExits = attempt.fullscreenExits || 0;
+
         if (hashData && Object.keys(hashData).length > 0) {
             if (hashData.meta) {
                 const meta = JSON.parse(hashData.meta);
-                if (meta.tabSwitchCount !== undefined) attempt.tabSwitchCount = meta.tabSwitchCount;
-                if (meta.fullscreenExits !== undefined) attempt.fullscreenExits = meta.fullscreenExits;
+                if (meta.tabSwitchCount !== undefined) finalTabSwitchCount = meta.tabSwitchCount;
+                if (meta.fullscreenExits !== undefined) finalFullscreenExits = meta.fullscreenExits;
             }
-            await attempt.save();
             
-            // Flush all question statuses from Redis to MongoDB
             const updates = [];
             for (const [field, valueStr] of Object.entries(hashData)) {
                 if (field.startsWith('q_')) {
@@ -322,6 +336,24 @@ class AttemptService {
 
             // Clear Redis key
             await redisClient.del(key);
+        }
+
+        // 4. Atomically transition status from InProgress -> Submitted/AutoSubmitted
+        const targetStatus = isAutoSubmit ? 'AutoSubmitted' : 'Submitted';
+        attempt = await ExamAttempt.findOneAndUpdate(
+            { userId, examId, status: 'InProgress' },
+            { $set: { 
+                status: targetStatus, 
+                endTime: new Date(),
+                tabSwitchCount: finalTabSwitchCount,
+                fullscreenExits: finalFullscreenExits
+            } },
+            { new: true }
+        );
+
+        if (!attempt) {
+            // Someone else beat us to it while flushing Redis
+            return await attemptRepository.findAttemptByUserAndExam(userId, examId);
         }
 
         // 3. Offload 100% of result computation to BullMQ worker queue
