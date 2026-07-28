@@ -41,7 +41,7 @@ app.use(helmet());
 
 const allowedOrigins = [
     process.env.FRONTEND_URL, 
-    'https://quiz-neon-three.vercel.app', // Your deployed Vercel frontend
+    'https://quiz-phi-snowy.vercel.app', // Your deployed Vercel frontend
     'http://localhost:3000', 
     'http://localhost:5173',
     'http://localhost:5173/',
