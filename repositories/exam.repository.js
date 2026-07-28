@@ -36,15 +36,27 @@ class ExamRepository {
     }
 
     async update(id, updateData) {
-        return await Exam.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        const exam = await Exam.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        if (exam) {
+            const redisClient = require('../config/redis');
+            await redisClient.del(`exam_cache_${id}`).catch(()=>null);
+        }
+        return exam;
     }
 
     async delete(id) {
+        const redisClient = require('../config/redis');
+        await redisClient.del(`exam_cache_${id}`).catch(()=>null);
         return await Exam.findByIdAndDelete(id);
     }
 
     async updateStatus(id, status) {
-        return await Exam.findByIdAndUpdate(id, { status }, { new: true });
+        const exam = await Exam.findByIdAndUpdate(id, { status }, { new: true });
+        if (exam) {
+            const redisClient = require('../config/redis');
+            await redisClient.del(`exam_cache_${id}`).catch(()=>null);
+        }
+        return exam;
     }
 
     async countByFilter(filter = {}) {
