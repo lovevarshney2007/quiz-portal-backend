@@ -11,7 +11,7 @@ class ResultRepository {
         return await Result.findOneAndUpdate(
             { student: resultData.student, exam: resultData.exam },
             resultData,
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
     }
 

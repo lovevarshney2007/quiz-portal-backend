@@ -363,7 +363,7 @@ class AttemptService {
                 tabSwitchCount: finalTabSwitchCount,
                 fullscreenExits: finalFullscreenExits
             } },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!attempt) {

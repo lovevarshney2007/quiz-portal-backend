@@ -69,7 +69,7 @@ class AttemptRepository {
         return await QuestionStatus.findOneAndUpdate(
             { attemptId, questionId },
             statusData,
-            { new: true, upsert: true } // Create if doesn't exist
+            { returnDocument: 'after', upsert: true } // Create if doesn't exist
         );
     }
 
