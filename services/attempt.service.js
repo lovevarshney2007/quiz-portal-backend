@@ -371,19 +371,13 @@ class AttemptService {
             return await attemptRepository.findAttemptByUserAndExam(userId, examId);
         }
 
-        // 3. Offload 100% of result computation to BullMQ worker queue
+        // 3. Compute result synchronously for immediate availability
         try {
-            const { resultQueue } = require('../queues/resultQueue');
-            await resultQueue.add('generateResults', { 
-                examId, 
-                attemptId: attempt._id 
-            }, {
-                jobId: `result_${attempt._id}`, // Enforce BullMQ job deduplication!
-                removeOnComplete: true,
-                attempts: 3
-            });
-        } catch (qErr) {
-            console.warn("Queue trigger skipped for attempt " + attempt._id + ":", qErr.message);
+            const resultService = require('./result.service');
+            await resultService.calculateResult(attempt._id);
+            console.log(`Computed result synchronously for attempt ${attempt._id}`);
+        } catch (err) {
+            console.error("Result calculation failed during submit:", err);
         }
 
         return attempt;
