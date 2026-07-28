@@ -236,7 +236,21 @@ class AttemptService {
             unattempted += Math.max(0, exam.totalQuestions - totalVisited);
         }
 
-        return { attempted, markedForReview, unattempted };
+        const Result = require('../models/Result');
+        const result = await Result.findOne({ student: userId, exam: examId }).lean();
+        
+        const summaryData = { attempted, markedForReview, unattempted };
+        
+        if (result) {
+            summaryData.score = result.totalScore;
+            summaryData.maxScore = result.maxScore;
+            summaryData.correct = result.correctAnswers;
+            summaryData.incorrect = result.wrongAnswers;
+            summaryData.percentage = result.percentage;
+            summaryData.unattempted = result.skippedQuestions; // More accurate from result
+        }
+        
+        return summaryData;
     }
 
     async getState(userId, examId) {
