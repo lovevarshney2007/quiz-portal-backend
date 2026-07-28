@@ -131,10 +131,10 @@ class AttemptService {
             // Acquire distributed lock for this specific question to prevent HGET/HSET race conditions
             const lockKey = `lock:${key}:q_${qId}`;
             let acquired = false;
-            for (let i = 0; i < 10; i++) {
-                acquired = await redisClient.set(lockKey, '1', 'NX', 'PX', 2000); // 2 second lock
+            for (let i = 0; i < 3; i++) {
+                acquired = await redisClient.set(lockKey, '1', 'NX', 'PX', 500); // BUG-018: 500ms lock, max 3 retries
                 if (acquired) break;
-                await new Promise(r => setTimeout(r, 100)); // wait 100ms before retry
+                await new Promise(r => setTimeout(r, 50));
             }
             if (!acquired) {
                 console.warn(`Failed to acquire lock for ${lockKey}`);
@@ -377,7 +377,8 @@ class AttemptService {
         try {
             const resultService = require('./result.service');
             await resultService.calculateResult(attempt._id);
-            console.log(`Computed result synchronously for attempt ${attempt._id}`);
+            const { logger } = require('../config/logger');
+            logger.info(`Computed result synchronously for attempt ${attempt._id}`);
         } catch (err) {
             console.error("Result calculation failed during submit:", err);
         }
@@ -386,6 +387,14 @@ class AttemptService {
     }
 
     async resetAttempt(userId, examId) {
+        // First find the attempt to get its _id for QuestionStatus cleanup
+        const attempt = await attemptRepository.findAttemptByUserAndExam(userId, examId);
+        if (attempt) {
+            // BUG-017 FIX: Delete orphaned QuestionStatus records before deleting the attempt
+            const QuestionStatus = require('../models/QuestionStatus');
+            await QuestionStatus.deleteMany({ attemptId: attempt._id }).catch(() => {});
+        }
+
         await attemptRepository.deleteAttemptByUserAndExam(userId, examId);
         // Clear both Redis key formats to ensure clean slate
         const redisClient = require('../config/redis');

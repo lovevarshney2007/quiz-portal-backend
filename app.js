@@ -41,16 +41,11 @@ app.use(helmet());
 
 const allowedOrigins = [
     process.env.FRONTEND_URL, 
-    'https://quiz-phi-snowy.vercel.app', // Your deployed Vercel frontend
+    'https://quiz-phi-snowy.vercel.app', // BUG-029 FIX: Deduplicated — was listed 3 times
     'http://localhost:3000', 
     'http://localhost:5173',
-    'http://localhost:5173/',
     'http://192.168.56.1:5173',
-    'http://192.168.56.1:5173/',
-    'http://192.168.1.4:5173',
-    'http://192.168.1.4:5173/',
-    'https://quiz-phi-snowy.vercel.app',
-    'https://quiz-phi-snowy.vercel.app/'
+    'http://192.168.1.4:5173'
 ];
 
 app.use(cors({

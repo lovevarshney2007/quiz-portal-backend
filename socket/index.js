@@ -12,8 +12,8 @@ const initSocket = (server) => {
         'http://localhost:3000', 
         'http://localhost:5173',
         'http://192.168.56.1:5173',
-        'http://192.168.1.4:5173',
-        'https://quiz-phi-snowy.vercel.app'
+        'http://192.168.1.4:5173'
+        // BUG-029 FIX: Removed duplicate entry for quiz-phi-snowy.vercel.app
     ];
 
     io = new Server(server, {
@@ -37,14 +37,22 @@ const initSocket = (server) => {
     });
 
     // Authentication Middleware
-    io.use((socket, next) => {
+    // BUG-012 FIX: Check Redis token blacklist (same as HTTP auth middleware).
+    // Without this, a logged-out student's socket connection would persist.
+    io.use(async (socket, next) => {
         const token = socket.handshake.auth.token || socket.handshake.headers['authorization'];
         if (!token) {
             return next(new Error('Authentication error'));
         }
 
         try {
-            const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
+            const cleanToken = token.replace('Bearer ', '');
+            // Check blacklist first
+            const isBlacklisted = await redisClient.get(`blacklist_${cleanToken}`).catch(() => null);
+            if (isBlacklisted) {
+                return next(new Error('Authentication error: token revoked'));
+            }
+            const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET);
             socket.user = decoded;
             next();
         } catch (err) {

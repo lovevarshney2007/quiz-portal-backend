@@ -2,7 +2,7 @@ const cron = require('node-cron');
 const ExamAttempt = require('../models/ExamAttempt');
 const Exam = require('../models/Exam');
 const attemptService = require('../services/attempt.service');
-const resultService = require('../services/result.service');
+const { logger } = require('../config/logger');
 
 // Run every minute
 cron.schedule('* * * * *', async () => {
@@ -22,11 +22,10 @@ cron.schedule('* * * * *', async () => {
         });
 
         for (const attempt of expiredAttempts) {
-            // Submit exam automatically
+            // BUG-005 FIX: submitExam() already calls calculateResult() internally.
+            // Calling it again here caused double-scoring and potential stale data corruption.
             await attemptService.submitExam(attempt.userId, attempt.examId, true);
-            // Generate result
-            await resultService.calculateResult(attempt._id);
-            console.log(`Auto-submitted and generated result for attempt: ${attempt._id}`);
+            logger.info(`Auto-submitted attempt: ${attempt._id}`);
         }
 
     } catch (error) {

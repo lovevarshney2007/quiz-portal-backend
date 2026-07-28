@@ -55,10 +55,9 @@ class ViolationService {
             await redisClient.hset(key, 'meta', JSON.stringify(meta)).catch(() => null);
 
             if (attempt.tabSwitchCount >= 5) {
-                attempt.isSuspicious = true;
-                attempt.status = 'AutoSubmitted';
-                attempt.endTime = new Date();
-                await attempt.save().catch(() => null);
+                // BUG-007 FIX: Do NOT set attempt.status manually before calling submitExam.
+                // submitExam() checks 'if (status !== InProgress) return early' — so pre-setting
+                // the status caused it to skip Redis flush and result calculation, losing all answers.
                 await require('./attempt.service').submitExam(studentId, examId, true).catch(() => null);
                 return { action: 'force_logout', message: 'Exam forcefully submitted due to multiple violations.' };
             }

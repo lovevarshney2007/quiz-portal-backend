@@ -60,4 +60,8 @@ const userSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
+// BUG-024 FIX: Enforce unique student numbers at DB level.
+// sparse=true allows null/undefined (admin accounts don't have student numbers).
+userSchema.index({ studentNumber: 1 }, { unique: true, sparse: true });
+
 module.exports = mongoose.model('User', userSchema);
