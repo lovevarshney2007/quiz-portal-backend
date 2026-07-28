@@ -5,9 +5,6 @@ const connectDB = require('./config/db');
 const { logger } = require('./config/logger');
 const { initSocket } = require('./socket');
 
-// Connect to Database
-connectDB();
-
 const PORT = process.env.PORT || 5000;
 
 // Create HTTP Server
@@ -23,8 +20,14 @@ const { connection: redisBullConnection } = require('./queues/resultQueue');
 const redisClient = require('./config/redis');
 const mongoose = require('mongoose');
 
-server.listen(PORT, () => {
-    logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+// Connect to Database and start server
+connectDB().then(() => {
+    server.listen(PORT, () => {
+        logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    });
+}).catch(err => {
+    logger.error(`Failed to connect to database. Server not started. Error: ${err.message}`);
+    process.exit(1);
 });
 
 // Handle unhandled promise rejections
