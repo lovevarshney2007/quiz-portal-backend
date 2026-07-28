@@ -24,9 +24,12 @@ class AttemptRepository {
             createdAt: new Date(),
             updatedAt: new Date(),
         };
-        // Use native insert to bypass Mongoose's massive overhead for large arrays
-        ExamAttempt.collection.insertOne(insertData).catch(err => {
-            console.error('Async insert failed for ExamAttempt:', err);
+        
+        // CRITICAL: Await the insert — fire-and-forget silently fails under load
+        // causing "attempt not found" errors when submit is called immediately after start
+        await ExamAttempt.collection.insertOne(insertData).catch(err => {
+            console.error('Insert failed for ExamAttempt:', err);
+            throw err;
         });
         
         const redisClient = require('../config/redis');
@@ -58,7 +61,7 @@ class AttemptRepository {
     }
 
     async updateAttempt(attemptId, updateData) {
-        return await ExamAttempt.findByIdAndUpdate(attemptId, updateData, { new: true });
+        return await ExamAttempt.findByIdAndUpdate(attemptId, updateData, { returnDocument: 'after' });
     }
 
     async getQuestionStatuses(attemptId) {
@@ -66,10 +69,12 @@ class AttemptRepository {
     }
 
     async updateQuestionStatus(attemptId, questionId, statusData) {
+        // Use $set to do a partial update — avoids overwriting existing fields
+        // and suppresses Mongoose deprecation warning with returnDocument
         return await QuestionStatus.findOneAndUpdate(
             { attemptId, questionId },
-            statusData,
-            { returnDocument: 'after', upsert: true } // Create if doesn't exist
+            { $set: statusData },
+            { returnDocument: 'after', upsert: true }
         );
     }
 

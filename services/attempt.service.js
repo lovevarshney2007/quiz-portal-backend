@@ -27,8 +27,9 @@ class AttemptService {
                 const user = await userRepository.findById(userId).catch(() => null);
                 const email = (user?.email || "").toLowerCase();
                 const role = (user?.role || "").toLowerCase();
-                const studentNum = String(user?.studentNumber || user?.rollNumber || user?.id || "");
-                const isTestExempt = role === 'admin' || email === 'admin@akgec.ac.in' || email === 'love2510084@akgec.ac.in' || studentNum === '2510084';
+                const adminResetEmail = (process.env.ADMIN_RESET_EMAIL || "").toLowerCase();
+                const isTestExempt = role === 'admin' || 
+                    (adminResetEmail && email === adminResetEmail);
 
                 if (isTestExempt) {
                     // For test users: fully reset attempt for a fresh start
@@ -203,10 +204,11 @@ class AttemptService {
         // Save to Redis (expires in 24 hours to prevent memory leaks)
         await redisClient.expire(key, 86400);
 
-        // Since frontend might need full state for summary updates, we could fetch it, 
-        // but it's more efficient to just return the updated part and let frontend merge.
-        // Returning full state to match old API contract for now.
-        return await this.getState(userId, examId);
+        // Return only the updated question state, not the full state.
+        // Calling getState() here was causing a full MongoDB round-trip on EVERY
+        // autoSave call — with 800 students saving every few seconds, this was
+        // ~4000 unnecessary DB queries/minute.
+        return { updated: true, questionId: payload.questionId, qState };
     }
 
     async getSummary(userId, examId) {

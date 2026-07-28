@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const hpp = require('hpp');
 const mongoSanitize = require('express-mongo-sanitize');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const checkBlockedIp = require('./middlewares/ipBlocker.middleware');
 
@@ -20,6 +21,17 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const violationRoutes = require('./routes/violation.routes');
 
 const app = express();
+
+// =============================================================================
+// CRITICAL: Trust proxy MUST be set BEFORE any middleware that reads req.ip.
+// On Render/Railway/AWS ELB, the real client IP is in X-Forwarded-For header.
+// Without this: express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+// and req.ip shows the load balancer IP, breaking IP-based rate limiting.
+// =============================================================================
+app.set('trust proxy', 1);
+
+// Compress responses — reduces payload size by 30-40% for 800 concurrent users
+app.use(compression());
 
 // IP Blocker
 app.use(checkBlockedIp);
@@ -64,16 +76,22 @@ app.use(cors({
 }));
 
 // Rate Limiters
+// NOTE: With a college NAT, hundreds of students share the same public IP.
+// We use generous per-IP limits but they now work correctly with trust proxy.
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50000, // Very high limit to prevent NAT blackout on college Wi-Fi
-    message: 'Too many requests from this IP, please try again after 15 minutes.'
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 'error', message: 'Too many login attempts. Please try again in 15 minutes.' }
 });
 
 const apiLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 50000, // Very high limit to prevent NAT blackout on college Wi-Fi
-    message: 'Too many requests from this IP, please try again after a minute.'
+    windowMs: 60 * 1000, // 1 minute  
+    max: 2000, // 2000 req/min per IP — enough for 700+ students through NAT
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 'error', message: 'Rate limit exceeded. Please slow down.' }
 });
 
 // Global Body parser with strict limits to prevent Payload DoS attacks
