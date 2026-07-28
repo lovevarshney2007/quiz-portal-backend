@@ -98,7 +98,8 @@ class AttemptService {
             throw new CustomError('Exam has been completed by the administrator', 403);
         }
 
-        const timeElapsed = (Date.now() - attempt.startTime.getTime()) / 60000;
+        const startTime = attempt.startTime instanceof Date ? attempt.startTime : new Date(attempt.startTime);
+        const timeElapsed = (Date.now() - startTime.getTime()) / 60000;
         if (timeElapsed > exam.duration) {
             await this.submitExam(userId, examId, true);
             throw new CustomError('Exam time has expired', 403);

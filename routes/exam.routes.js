@@ -11,6 +11,7 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/', examController.getAllExams);
+router.get('/live-students', authorize(ROLES.ADMIN), examController.getLiveStudents);
 router.get('/:id', examController.getExam);
 router.post('/:id/autosave', authorize(ROLES.STUDENT), examController.syncStudentResponse);
 
@@ -29,7 +30,6 @@ router.patch('/:id/archive', auditLog('ARCHIVE_EXAM'), examController.archiveExa
 router.patch('/:id/extend', validate(extendExamSchema), auditLog('EXTEND_EXAM'), examController.extendExam);
 router.post('/:id/duplicate', auditLog('DUPLICATE_EXAM'), examController.duplicateExam);
 router.post('/:id/force-submit/:studentId', auditLog('FORCE_SUBMIT'), examController.forceSubmit);
-router.get('/live-students', examController.getLiveStudents);
 router.get('/:id/live-students', examController.getLiveStudents);
 
 module.exports = router;
