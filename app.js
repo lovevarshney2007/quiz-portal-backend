@@ -72,7 +72,7 @@ const authLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 50000, // Very high limit to prevent NAT blackout on college Wi-Fi
     message: 'Too many requests from this IP, please try again after a minute.'
 });
 

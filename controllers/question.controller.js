@@ -8,12 +8,13 @@ const createQuestion = catchAsync(async (req, res) => {
     res.status(201).json({ status: 'success', data: { question } });
 });
 
+const attemptRepository = require('../repositories/attempt.repository');
+
 const getExamQuestions = catchAsync(async (req, res) => {
     const questions = await questionService.getQuestionsByExamId(req.params.examId);
-
-    // Strip sensitive answer data for non-admin users to prevent cheating
     const isAdmin = req.user && req.user.role === 'Admin';
-    const sanitized = isAdmin
+    
+    let sanitized = isAdmin
         ? questions
         : questions.map((q) => {
               const obj = typeof q.toObject === 'function' ? q.toObject() : { ...q };
@@ -21,6 +22,36 @@ const getExamQuestions = catchAsync(async (req, res) => {
               delete obj.explanation; // explanation can directly reveal the answer
               return obj;
           });
+
+    // Anti-Cheating: If student has an active attempt, strictly enforce their randomized mapping
+    if (!isAdmin && req.user) {
+        const attempt = await attemptRepository.findAttemptByUserAndExam(req.user._id, req.params.examId);
+        if (attempt && attempt.questionMapping && attempt.questionMapping.length > 0) {
+            const mappedQuestions = [];
+            for (const mapItem of attempt.questionMapping) {
+                const q = sanitized.find(sq => sq._id.toString() === mapItem.questionId.toString());
+                if (q) {
+                    const clonedQ = { ...q };
+                    // Shuffle the options according to the mapping
+                    if (clonedQ.options && mapItem.optionsOrder && mapItem.optionsOrder.length === clonedQ.options.length) {
+                        const newOptions = [];
+                        for (const idx of mapItem.optionsOrder) {
+                            newOptions.push(clonedQ.options[idx]);
+                        }
+                        clonedQ.options = newOptions;
+                    }
+                    mappedQuestions.push(clonedQ);
+                }
+            }
+            // Fallback: If map is smaller than questions (e.g. new questions added after start), append the unmapped ones
+            for (const q of sanitized) {
+                if (!mappedQuestions.find(mq => mq._id.toString() === q._id.toString())) {
+                    mappedQuestions.push(q);
+                }
+            }
+            sanitized = mappedQuestions;
+        }
+    }
 
     res.status(200).json({ status: 'success', data: { questions: sanitized } });
 });

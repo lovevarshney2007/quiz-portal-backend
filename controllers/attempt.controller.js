@@ -16,7 +16,7 @@ const autoSave = catchAsync(async (req, res) => {
 const getState = catchAsync(async (req, res) => {
     const { examId } = req.params;
     const state = await attemptService.getState(req.user._id, examId);
-    res.status(200).json({ status: 'success', data: { state } });
+    res.status(200).json({ status: 'success', data: { state, serverTime: Date.now() } });
 });
 
 const getSummary = catchAsync(async (req, res) => {
