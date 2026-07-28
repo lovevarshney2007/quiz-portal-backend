@@ -60,8 +60,22 @@ class AuthService {
         }
     }
 
-    async logout(userId) {
+    async logout(userId, token = null) {
         await userRepository.updateRefreshToken(userId, null);
+        if (token) {
+            try {
+                const decoded = jwt.decode(token);
+                if (decoded && decoded.exp) {
+                    const redisClient = require('../config/redis');
+                    const timeToExpire = decoded.exp - Math.floor(Date.now() / 1000);
+                    if (timeToExpire > 0) {
+                        await redisClient.set(`blacklist_${token}`, 'true', 'EX', timeToExpire);
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to blacklist JWT token on logout:', err.message);
+            }
+        }
     }
 }
 

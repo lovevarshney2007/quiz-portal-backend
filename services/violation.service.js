@@ -6,49 +6,61 @@ const CustomError = require('../utils/customError');
 
 class ViolationService {
     async reportViolation(studentId, examId, violationData) {
+        // 1. Rate Limit: Prevent violation spamming DoS attacks
+        if (examId) {
+            const throttleKey = `violation_throttle:${examId}:${studentId}`;
+            const isThrottled = await redisClient.get(throttleKey);
+            if (isThrottled) {
+                return { action: 'ignored', message: 'Violation reported too rapidly. Ignored.' };
+            }
+            await redisClient.set(throttleKey, '1', 'EX', 5); // 5-second cooldown
+        }
+
         let attempt = await attemptRepository.findAttemptByUserAndExam(studentId, examId);
         if (!attempt) {
             attempt = await ExamAttempt.findOne({ userId: studentId }).sort({ createdAt: -1 });
         }
+        
+        if (!attempt || attempt.status !== 'InProgress') {
+            throw new CustomError('No active exam attempt found to report violation against.', 403);
+        }
 
         const violation = await Violation.create({
             student: studentId,
-            exam: examId || attempt?.examId,
-            attempt: attempt?._id,
+            exam: examId || attempt.examId,
+            attempt: attempt._id,
             type: violationData.type || 'TabSwitch',
             ip: violationData.ip,
             browser: violationData.browser,
             device: violationData.device
         });
 
-        if (attempt) {
-            if (violationData.type === 'TabSwitch') {
-                attempt.tabSwitchCount = (attempt.tabSwitchCount || 0) + 1;
-            } else if (violationData.type === 'FullscreenExit') {
-                attempt.fullscreenExits = (attempt.fullscreenExits || 0) + 1;
-            }
-            await attempt.save().catch(e => console.warn("Failed to save attempt violation count:", e.message));
+        if (violationData.type === 'TabSwitch') {
+            attempt.tabSwitchCount = (attempt.tabSwitchCount || 0) + 1;
+        } else if (violationData.type === 'FullscreenExit') {
+            attempt.fullscreenExits = (attempt.fullscreenExits || 0) + 1;
+        }
+        await attempt.save().catch(e => console.warn("Failed to save attempt violation count:", e.message));
 
-            // Redis state sync
-            if (examId) {
-                const key = `exam_attempt:${examId}:${studentId}`;
-                const existingDataStr = await redisClient.get(key).catch(() => null);
-                let state = existingDataStr ? JSON.parse(existingDataStr) : {
-                    questions: {},
-                    tabSwitchCount: attempt.tabSwitchCount,
-                    fullscreenExits: attempt.fullscreenExits
-                };
-                state.tabSwitchCount = attempt.tabSwitchCount;
-                await redisClient.set(key, JSON.stringify(state), 'EX', 86400).catch(() => null);
+        // Redis state sync (Hash based)
+        if (examId) {
+            const key = `exam_attempt_hash:${examId}:${studentId}`;
+            const metaStr = await redisClient.hget(key, 'meta').catch(() => null);
+            let meta = metaStr ? JSON.parse(metaStr) : {
+                tabSwitchCount: attempt.tabSwitchCount,
+                fullscreenExits: attempt.fullscreenExits
+            };
+            meta.tabSwitchCount = attempt.tabSwitchCount;
+            meta.fullscreenExits = attempt.fullscreenExits;
+            await redisClient.hset(key, 'meta', JSON.stringify(meta)).catch(() => null);
 
-                if (attempt.tabSwitchCount >= 5) {
-                    attempt.isSuspicious = true;
-                    attempt.status = 'AutoSubmitted';
-                    attempt.endTime = new Date();
-                    await attempt.save().catch(() => null);
-                    await require('./attempt.service').submitExam(studentId, examId, true).catch(() => null);
-                    return { action: 'force_logout', message: 'Exam forcefully submitted due to multiple violations.' };
-                }
+            if (attempt.tabSwitchCount >= 5) {
+                attempt.isSuspicious = true;
+                attempt.status = 'AutoSubmitted';
+                attempt.endTime = new Date();
+                await attempt.save().catch(() => null);
+                await require('./attempt.service').submitExam(studentId, examId, true).catch(() => null);
+                return { action: 'force_logout', message: 'Exam forcefully submitted due to multiple violations.' };
             }
         }
 

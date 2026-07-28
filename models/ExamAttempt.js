@@ -54,5 +54,9 @@ const examAttemptSchema = new mongoose.Schema({
 // Prevent multiple attempts for the same exam by the same user
 examAttemptSchema.index({ userId: 1, examId: 1 }, { unique: true });
 
+// Optimize live student monitoring and auto-complete worker queries
+examAttemptSchema.index({ examId: 1, status: 1 });
+examAttemptSchema.index({ userId: 1, status: 1 });
+
 const ExamAttempt = mongoose.model('ExamAttempt', examAttemptSchema);
 module.exports = ExamAttempt;

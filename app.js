@@ -76,9 +76,9 @@ const apiLimiter = rateLimit({
     message: 'Too many requests from this IP, please try again after a minute.'
 });
 
-// Body parser
-app.use(express.json({ limit: '10mb' }));  // 50mb was too generous — 10mb is ample for bulk imports
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+// Global Body parser with strict limits to prevent Payload DoS attacks
+app.use(express.json({ limit: '100kb' })); 
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(cookieParser());
 
 // Data sanitization against NoSQL query injection
@@ -99,7 +99,8 @@ app.get('/', (req, res) => {
 // Mount Routes
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/exams', apiLimiter, examRoutes);
-app.use('/api/v1/questions', apiLimiter, questionRoutes);
+// Allow larger payloads ONLY for bulk question imports (e.g. confirm-import)
+app.use('/api/v1/questions', apiLimiter, express.json({ limit: '10mb' }), questionRoutes);
 app.use('/api/v1/attempts', apiLimiter, attemptRoutes);
 app.use('/api/v1/results', apiLimiter, resultRoutes);
 app.use('/api/v1/leaderboard', apiLimiter, leaderboardRoutes);

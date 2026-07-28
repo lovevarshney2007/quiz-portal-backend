@@ -50,7 +50,7 @@ const reportWorker = new Worker('reportQueue', async job => {
         return { filePath };
     }
 }, {
-    connection: new Redis(redisClient.redisConfig, { maxRetriesPerRequest: null })
+    connection: require('../queues/resultQueue').connection
 });
 
 module.exports = reportWorker;

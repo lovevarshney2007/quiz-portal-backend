@@ -93,6 +93,76 @@ const usersToSeed = [
         studentNumber: "2510010",
         role: "Student",
         isVerified: true
+    },
+    {
+        name: "Aditya Rao",
+        email: "aditya2510011@akgec.ac.in",
+        studentNumber: "2510011",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Sneha Iyer",
+        email: "sneha2510012@akgec.ac.in",
+        studentNumber: "2510012",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Nikhil Sharma",
+        email: "nikhil2510013@akgec.ac.in",
+        studentNumber: "2510013",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Pooja Mishra",
+        email: "pooja2510014@akgec.ac.in",
+        studentNumber: "2510014",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Siddharth Malhotra",
+        email: "siddharth2510015@akgec.ac.in",
+        studentNumber: "2510015",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Riya Kapoor",
+        email: "riya2510016@akgec.ac.in",
+        studentNumber: "2510016",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Arjun Khanna",
+        email: "arjun2510017@akgec.ac.in",
+        studentNumber: "2510017",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Kriti Chopra",
+        email: "kriti2510018@akgec.ac.in",
+        studentNumber: "2510018",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Varun Dhawan",
+        email: "varun2510019@akgec.ac.in",
+        studentNumber: "2510019",
+        role: "Student",
+        isVerified: true
+    },
+    {
+        name: "Disha Patani",
+        email: "disha2510020@akgec.ac.in",
+        studentNumber: "2510020",
+        role: "Student",
+        isVerified: true
     }
 ];
 // ---------------------

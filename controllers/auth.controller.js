@@ -47,7 +47,8 @@ const refreshToken = catchAsync(async (req, res) => {
 });
 
 const logout = catchAsync(async (req, res) => {
-    await authService.logout(req.user._id);
+    const token = req.cookies.gdg_token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+    await authService.logout(req.user._id, token);
 
     // Clear both cookies — options must match the Set-Cookie options (except maxAge/expires)
     const clearOpts = {

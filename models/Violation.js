@@ -32,5 +32,9 @@ const violationSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Optimize violation aggregation and admin dashboard queries
+violationSchema.index({ exam: 1, createdAt: -1 });
+violationSchema.index({ student: 1, exam: 1 });
+
 const Violation = mongoose.model('Violation', violationSchema);
 module.exports = Violation;

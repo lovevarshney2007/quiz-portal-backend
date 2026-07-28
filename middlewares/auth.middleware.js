@@ -28,6 +28,13 @@ exports.protect = async (req, res, next) => {
             return res.status(401).json({ status: 'error', message: 'You are not logged in!' });
         }
 
+        // Check if token is blacklisted in Redis
+        const redisClient = require('../config/redis');
+        const isBlacklisted = await redisClient.get(`blacklist_${token}`);
+        if (isBlacklisted) {
+            return res.status(401).json({ status: 'error', message: 'Session expired. Please log in again.' });
+        }
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await userRepository.findById(decoded.id);
 

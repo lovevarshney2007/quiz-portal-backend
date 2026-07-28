@@ -6,9 +6,32 @@ const redisClient = require('../config/redis');
 let io;
 
 const initSocket = (server) => {
+    const allowedOrigins = [
+        process.env.FRONTEND_URL, 
+        'https://quiz-neon-three.vercel.app',
+        'http://localhost:3000', 
+        'http://localhost:5173',
+        'http://192.168.56.1:5173',
+        'http://192.168.1.4:5173',
+        'https://quiz-phi-snowy.vercel.app'
+    ];
+
     io = new Server(server, {
         cors: {
-            origin: '*',
+            origin: function (origin, callback) {
+                if (!origin) return callback(null, true);
+                const cleanOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+                const isAllowed = allowedOrigins.some(allowed => {
+                    if (!allowed) return false;
+                    const cleanAllowed = allowed.endsWith('/') ? allowed.slice(0, -1) : allowed;
+                    return cleanAllowed === cleanOrigin;
+                });
+                if (isAllowed) {
+                    callback(null, true);
+                } else {
+                    callback(new Error('Not allowed by CORS'));
+                }
+            },
             methods: ['GET', 'POST']
         }
     });
