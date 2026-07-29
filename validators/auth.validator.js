@@ -5,7 +5,7 @@ const Joi = require('joi');
 const loginSchema = Joi.object({
     email: Joi.string().email().required(),
     studentNumber: Joi.string().optional().allow('', null),
-    captchaToken: Joi.string().optional()
+    captchaToken: Joi.string().optional().allow('', null)
 });
 
 module.exports = {
