@@ -10,6 +10,7 @@ const { startExamSchema, autoSaveSchema, submitExamSchema } = require('../valida
 const criticalLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 5,
+    keyGenerator: (req) => req.user ? req.user.id : req.ip,
     standardHeaders: true,
     legacyHeaders: false,
     message: { status: 'error', message: 'Too many requests. Please wait before trying again.' }

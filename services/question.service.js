@@ -13,7 +13,10 @@ class QuestionService {
         
         exam.totalQuestions += 1;
         exam.maximumMarks = (exam.maximumMarks || 0) + question.marks;
-        await exam.save();
+        await examRepository.update(exam._id, {
+            totalQuestions: exam.totalQuestions,
+            maximumMarks: exam.maximumMarks
+        });
 
         return question;
     }
@@ -46,7 +49,10 @@ class QuestionService {
         if (exam) {
             exam.totalQuestions = Math.max(0, exam.totalQuestions - 1);
             exam.maximumMarks = Math.max(0, (exam.maximumMarks || 0) - question.marks);
-            await exam.save();
+            await examRepository.update(exam._id, {
+                totalQuestions: exam.totalQuestions,
+                maximumMarks: exam.maximumMarks
+            });
         }
         return true;
     }
@@ -297,7 +303,9 @@ class QuestionService {
         }
         
         if (examModified) {
-            await exam.save();
+            await examRepository.update(exam._id, {
+                sections: exam.sections
+            });
         }
         
         return { success: true, preview: questions };
@@ -310,7 +318,10 @@ class QuestionService {
         if (exam) {
             exam.totalQuestions += questions.length;
             exam.maximumMarks = (exam.maximumMarks || 0) + questions.reduce((sum, q) => sum + q.marks, 0);
-            await exam.save();
+            await examRepository.update(exam._id, {
+                totalQuestions: exam.totalQuestions,
+                maximumMarks: exam.maximumMarks
+            });
         }
         
         return questions;

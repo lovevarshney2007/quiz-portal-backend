@@ -24,8 +24,12 @@ cron.schedule('* * * * *', async () => {
         for (const attempt of expiredAttempts) {
             // BUG-005 FIX: submitExam() already calls calculateResult() internally.
             // Calling it again here caused double-scoring and potential stale data corruption.
-            await attemptService.submitExam(attempt.userId, attempt.examId, true);
-            logger.info(`Auto-submitted attempt: ${attempt._id}`);
+            // Process asynchronously without awaiting sequentially to prevent cron overlapping
+            attemptService.submitExam(attempt.userId, attempt.examId, true).then(() => {
+                logger.info(`Auto-submitted attempt: ${attempt._id}`);
+            }).catch(err => {
+                logger.error(`Auto-submit failed for ${attempt._id}:`, err);
+            });
         }
 
     } catch (error) {

@@ -40,7 +40,10 @@ class ViolationService {
         } else if (violationData.type === 'FullscreenExit') {
             attempt.fullscreenExits = (attempt.fullscreenExits || 0) + 1;
         }
-        await attempt.save().catch(e => console.warn("Failed to save attempt violation count:", e.message));
+        await attemptRepository.updateAttempt(attempt._id, {
+            tabSwitchCount: attempt.tabSwitchCount,
+            fullscreenExits: attempt.fullscreenExits
+        }).catch(e => console.warn("Failed to save attempt violation count:", e.message));
 
         // Redis state sync (Hash based)
         if (examId) {

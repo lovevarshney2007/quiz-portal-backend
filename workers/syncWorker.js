@@ -28,7 +28,10 @@ const syncWorker = new Worker('syncQueue', async job => {
                             const meta = JSON.parse(hashData.meta);
                             if (meta.tabSwitchCount !== undefined) attempt.tabSwitchCount = meta.tabSwitchCount;
                             if (meta.fullscreenExits !== undefined) attempt.fullscreenExits = meta.fullscreenExits;
-                            await attempt.save();
+                            await attemptRepository.updateAttempt(attempt._id, {
+                                tabSwitchCount: attempt.tabSwitchCount,
+                                fullscreenExits: attempt.fullscreenExits
+                            });
                         } catch (parseErr) {
                             console.warn(`Failed to parse meta for attempt ${attempt._id}:`, parseErr.message);
                         }
