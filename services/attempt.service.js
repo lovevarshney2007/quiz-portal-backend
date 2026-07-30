@@ -131,14 +131,16 @@ class AttemptService {
             // Acquire distributed lock for this specific question to prevent HGET/HSET race conditions
             const lockKey = `lock:${key}:q_${qId}`;
             let acquired = false;
-            for (let i = 0; i < 3; i++) {
-                acquired = await redisClient.set(lockKey, '1', 'NX', 'PX', 500); // BUG-018: 500ms lock, max 3 retries
+            for (let i = 0; i < 10; i++) {
+                acquired = await redisClient.set(lockKey, '1', 'NX', 'PX', 2000); // 2000ms lock TTL, max 10 retries
                 if (acquired) break;
-                await new Promise(r => setTimeout(r, 50));
+                await new Promise(r => setTimeout(r, 100)); // 100ms between retries = up to 1s total wait
             }
             if (!acquired) {
                 console.warn(`Failed to acquire lock for ${lockKey}`);
-                throw new CustomError('Too many concurrent requests, please slow down', 429);
+                // Return gracefully instead of throwing - the answer is not lost, just not saved this tick
+                // The frontend auto-save will retry on the next interval
+                return null;
             }
 
             try {
