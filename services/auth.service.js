@@ -28,8 +28,26 @@ class AuthService {
             if (!isCaptchaValid) throw new CustomError('Invalid captcha', 400);
         }
 
-        const user = await userRepository.findByEmail(email);
-        if (!user) throw new CustomError('Invalid email or student number', 401);
+        let user = await userRepository.findByEmail(email);
+        
+        if (!user) {
+            // Check if the student exists in the 'registrations' collection
+            const mongoose = require('mongoose');
+            const registration = await mongoose.connection.db.collection('registrations').findOne({ email: email });
+            
+            if (!registration) {
+                throw new CustomError('Invalid credentials or you are not registered for this event.', 401);
+            }
+
+            // Auto-create the user based on registration data
+            user = await userRepository.create({
+                name: registration.name || 'Student',
+                email: registration.email || email,
+                studentNumber: registration.studentNumber || studentNumber,
+                role: 'Student',
+                isVerified: true
+            });
+        }
 
         if (user.role === 'Student' && user.studentNumber !== studentNumber) {
             throw new CustomError('Invalid email or student number', 401);
