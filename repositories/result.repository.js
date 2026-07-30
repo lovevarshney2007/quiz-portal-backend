@@ -26,7 +26,8 @@ class ResultRepository {
 
     async findByExamId(examId) {
         return await Result.find({ exam: examId })
-            .populate('student', 'name studentNumber email')
+            .populate('student', 'name studentNumber email rollNumber applicationNumber')
+            .populate('exam', 'title description duration totalMarks')
             .sort({ totalScore: -1, completionTime: 1 });
     }
 
@@ -35,7 +36,8 @@ class ResultRepository {
         return await Result.find({ exam: examId })
             .sort({ totalScore: -1, completionTime: 1 })
             .limit(limit)
-            .populate('student', 'name studentNumber email');
+            .populate('student', 'name studentNumber email rollNumber applicationNumber')
+            .populate('exam', 'title description duration totalMarks');
     }
 
     async countByFilter(filter = {}) {

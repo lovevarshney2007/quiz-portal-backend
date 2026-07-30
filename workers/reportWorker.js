@@ -12,7 +12,9 @@ const reportWorker = new Worker('reportQueue', async job => {
     if (job.name === 'generateExamReport') {
         const { examId } = job.data;
         const exam = await Exam.findById(examId);
-        const results = await Result.find({ exam: examId }).populate('student', 'name studentNumber email');
+        const results = await Result.find({ exam: examId })
+            .populate('student', 'name studentNumber email rollNumber applicationNumber')
+            .populate('exam', 'title description duration totalMarks');
 
         const workbook = new exceljs.Workbook();
         const sheet = workbook.addWorksheet('Results');
