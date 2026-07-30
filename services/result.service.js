@@ -48,14 +48,14 @@ class ResultService {
             if (!sectionStats[secId]) sectionStats[secId] = { sectionId: secId, title: 'Default', score: 0, correct: 0, wrong: 0, skipped: 0 };
             const sec = sectionStats[secId];
 
-            let isCorrect = false;
+            let isCorrect = null;
 
             const hasGivenAnswer = status.givenAnswer && (
                 Array.isArray(status.givenAnswer)
                     ? status.givenAnswer.length > 0 && status.givenAnswer.some(a => String(a).trim() !== '')
                     : String(status.givenAnswer).trim() !== ''
             );
-            const isAnswered = status.status === 'Answered' || status.status === 'AnsweredMarkedForReview' || hasGivenAnswer;
+            const isAnswered = hasGivenAnswer;
 
             if (isAnswered) {
                 isCorrect = this.checkAnswer(question, status.givenAnswer);
@@ -75,6 +75,7 @@ class ResultService {
                 skippedQuestions++;
                 sec.skipped++;
             }
+
             
             responses.push({
                 question: question._id,

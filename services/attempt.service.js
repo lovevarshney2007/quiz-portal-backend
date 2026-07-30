@@ -219,7 +219,7 @@ class AttemptService {
         
         Object.values(state.questions).forEach(q => {
             const hasAnswer = q.givenAnswer && (Array.isArray(q.givenAnswer) ? q.givenAnswer.length > 0 : String(q.givenAnswer).trim() !== '');
-            const isAnswered = q.status === 'Answered' || q.status === 'AnsweredMarkedForReview' || hasAnswer;
+            const isAnswered = hasAnswer;
 
             if (isAnswered) {
                 attempted++;
@@ -320,9 +320,13 @@ class AttemptService {
                 if (!qId) return null;
                 const statusData = {
                     status: ans.status || (ans.givenAnswer && ans.givenAnswer.length > 0 ? 'Answered' : 'NotVisited'),
-                    givenAnswer: Array.isArray(ans.givenAnswer) ? ans.givenAnswer : (ans.givenAnswer ? [ans.givenAnswer] : []),
-                    timeSpent: Number(ans.timeSpent || 0)
+                    givenAnswer: Array.isArray(ans.givenAnswer) ? ans.givenAnswer : (ans.givenAnswer ? [ans.givenAnswer] : [])
                 };
+                if (ans.timeSpent) {
+                    // This will still overwrite, but only if the frontend explicitly sends it.
+                    // To be completely safe, maybe we should not overwrite it at all, or just omit if not provided.
+                    statusData.timeSpent = Number(ans.timeSpent);
+                }
                 return attemptRepository.updateQuestionStatus(attempt._id, qId, statusData);
             }).filter(Boolean);
             await Promise.all(explicitUpdates).catch(err => console.error("Error writing explicit answers to Mongo:", err));
