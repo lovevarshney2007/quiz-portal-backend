@@ -54,6 +54,9 @@ npm run dev
 ```
 The server should now be running on `http://localhost:5000`.
 
+### 4. Production Deployment
+For deploying the complete application (Frontend + Backend + DB + Redis) safely for 500+ concurrent students, please strictly follow the official **[Deployment Guide](./deployment.md)** located in the root of the project.
+
 ---
 
 ## 🧪 Testing the APIs

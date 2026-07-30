@@ -373,14 +373,17 @@ class AttemptService {
             return await attemptRepository.findAttemptByUserAndExam(userId, examId);
         }
 
-        // 3. Compute result synchronously for immediate availability
+        // 3. Queue result calculation asynchronously to prevent event loop blocking
         try {
-            const resultService = require('./result.service');
-            await resultService.calculateResult(attempt._id);
+            const { resultQueue } = require('../queues/resultQueue');
+            await resultQueue.add('generateResults', {
+                examId: examId,
+                attemptId: attempt._id
+            });
             const { logger } = require('../config/logger');
-            logger.info(`Computed result synchronously for attempt ${attempt._id}`);
+            logger.info(`Queued result generation for attempt ${attempt._id}`);
         } catch (err) {
-            console.error("Result calculation failed during submit:", err);
+            console.error("Result calculation queue failed during submit:", err);
         }
 
         return attempt;
