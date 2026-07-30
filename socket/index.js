@@ -8,6 +8,7 @@ let io;
 const initSocket = (server) => {
     const allowedOrigins = [
         process.env.FRONTEND_URL, 
+        'https://quiz.gdgakgec.org',
         'https://quiz-phi-snowy.vercel.app',
         'http://localhost:3000', 
         'http://localhost:5173',

@@ -41,6 +41,7 @@ app.use(helmet());
 
 const allowedOrigins = [
     process.env.FRONTEND_URL, 
+    'https://quiz.gdgakgec.org',
     'https://quiz-phi-snowy.vercel.app', // BUG-029 FIX: Deduplicated — was listed 3 times
     'http://localhost:3000', 
     'http://localhost:5173',
